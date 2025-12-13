@@ -242,7 +242,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
             Handler(Looper.getMainLooper()).postDelayed({
                 if (tryOpenNotify.value) {
-                    openNotify(bleDevice!!.get())
+                    openNotify(bleDevice!!.get())  // <============== get bleDevice =====
                 } else {
                     openIndicate(bleDevice!!.get())
                 }
@@ -374,7 +374,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 @SuppressLint("MissingPermission", "NewApi")
                 override fun onCharacteristicChanged(data: ByteArray) {
                     //Utils.p(data)
-                    println(StarmaxBleClient.instance.notify(data))
+                    println(StarmaxBleClient.instance.notify(data))  // << ===================== here data received from ble notify ==========
                 }
             })
     }
