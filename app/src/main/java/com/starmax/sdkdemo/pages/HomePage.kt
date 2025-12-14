@@ -1,14 +1,18 @@
 package com.starmax.sdkdemo.pages
 
+import android.provider.CalendarContract
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Bluetooth
+import androidx.compose.material.icons.twotone.GridView
 import androidx.compose.material.icons.twotone.SignalCellularOff
 import androidx.compose.material.icons.twotone.SmartButton
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DrawerValue
@@ -24,11 +28,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -212,7 +218,7 @@ fun HomePage(navController: NavController) {
                         }) {
                             Text(
                                 text = "Pair Device",
-                                color = MaterialTheme.colorScheme.primary
+                                color = Color.White
                             )
                         }
                     },
@@ -223,13 +229,13 @@ fun HomePage(navController: NavController) {
 //                                drawerState.open()
                             }
                         }) {
-                            Icon(Icons.TwoTone.SmartButton, contentDescription = "command list")
+                            Icon(Icons.TwoTone.GridView, contentDescription = "command list")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                        actionIconContentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        containerColor = Color(0xFF3ABA75),
+                        titleContentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.inverseOnSurface
                     )
                 )
             },
@@ -248,7 +254,7 @@ fun HomePage(navController: NavController) {
                         val bleDevice = bleViewModel.bleDevice
                         val isConnected = bleDevice?.get() != null
 
-                        androidx.compose.material3.Card(
+                        Card(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Row(
@@ -268,7 +274,7 @@ fun HomePage(navController: NavController) {
                                             MaterialTheme.colorScheme.error
                                     )
 
-                                    androidx.compose.foundation.layout.Column(
+                                    Column(
                                         modifier = Modifier.padding(start = 12.dp)
                                     ) {
 
@@ -302,7 +308,7 @@ fun HomePage(navController: NavController) {
 
                     // ================== SERVER & CHANNEL ==================
                     item {
-                        androidx.compose.material3.Card(
+                        Card(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -322,7 +328,7 @@ fun HomePage(navController: NavController) {
                     // ================== STATUS MESSAGE ==================
                     item {
                         if (bleViewModel.bleMessage.value.isNotBlank()) {
-                            androidx.compose.material3.Card(
+                            Card(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -346,7 +352,7 @@ fun HomePage(navController: NavController) {
                             TextButton(onClick = {
                                 viewModel.toScan(navController)
                             }) {
-                                Text("Pair Device")
+                                Text("Pair Device", color = Color.White)
                             }
                         }
                     }
@@ -354,10 +360,10 @@ fun HomePage(navController: NavController) {
                     // ================== SMARTWATCH DATA CARD ==================
                     item {
 
-                        androidx.compose.material3.Card(
+                        Card(
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            androidx.compose.foundation.layout.Column(
+                            Column(
                                 modifier = Modifier.padding(16.dp)
                             ) {
 

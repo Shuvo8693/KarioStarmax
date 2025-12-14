@@ -191,26 +191,27 @@ class BleViewModel() : ViewModel(), KoinComponent {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             val binder: RxBleService.RCBinder = service as RxBleService.RCBinder
             bleService = binder.service
-            Log.e("BleViewModel", "-- RxBleService-- 已连接")
+            Log.e("BleViewModel", "-- RxBleService -- Connected")
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
             bleService = null
-            Log.e("BleViewModel", "-- RxBleService-- 已断连")
+            Log.e("BleViewModel", "-- RxBleService -- Disconnected")
         }
     }
 
     var bleGattCallback: BleGattCallback = object : BleGattCallback() {
+
         override fun onStartConnect() {
             bleState = BleState.CONNECTTING
             bleStateLiveData.postValue(bleState)
-            bleMessage.value = "蓝牙正在连接"
+            bleMessage.value = "Bluetooth is connecting"
         }
 
         override fun onConnectFail(bleDevice: BleDevice?, exception: BleException?) {
             bleState = BleState.DISCONNECTED
             bleStateLiveData.postValue(bleState)
-            bleMessage.value = "蓝牙连接失败" + exception.toString()
+            bleMessage.value = "Bluetooth connection failed: $exception"
         }
 
         override fun onConnectSuccess(
@@ -222,32 +223,27 @@ class BleViewModel() : ViewModel(), KoinComponent {
             bleState = BleState.CONNECTED
             bleGatt = SoftReference(gatt)
             bleStateLiveData.postValue(bleState)
-            bleMessage.value = "蓝牙连接成功"
+            bleMessage.value = "Bluetooth connected successfully"
 
             Log.d("BleViewModel", gatt?.getService(NotifyServiceUUID).toString())
 
             if (gatt?.getService(NotifyServiceUUID) == null) {
                 Handler(Looper.getMainLooper()).postDelayed({
-                    if (ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ) != PackageManager.PERMISSION_GRANTED
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
                     ) {
                         gatt?.discoverServices()
                     }
-
                 }, 1000)
                 return
             }
 
             Handler(Looper.getMainLooper()).postDelayed({
                 if (tryOpenNotify.value) {
-                    openNotify(bleDevice!!.get())  // <============== get bleDevice =====
+                    openNotify(bleDevice!!.get())   // todo:  get bleDevice info
                 } else {
                     openIndicate(bleDevice!!.get())
                 }
             }, 3000)
-
         }
 
         override fun onDisConnected(
@@ -259,37 +255,30 @@ class BleViewModel() : ViewModel(), KoinComponent {
             bleState = BleState.DISCONNECTED
             bleGatt = SoftReference(gatt)
             bleStateLiveData.postValue(bleState)
-            bleMessage.value = "蓝牙连接断开"
+            bleMessage.value = "Bluetooth connection disconnected"
             disconnectSubject.onNext(1)
 
-            //isActiveDisConnected 为false时，尝试重连，我这里是延迟2秒
+            // When isActiveDisConnected is false, attempt reconnection (2s delay)
         }
 
         override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
-
         }
-
     }
 
     init {
         initPath()
-        //蓝牙打开、关闭广播监听
+        // Bluetooth on/off broadcast listener
         context.registerReceiver(BluetoothListenerReceiver(this), makeFilter())
         StarmaxBleClient.instance.setWrite { byteArray -> sendMsg(byteArray) }
     }
-
 
     fun setNotify(boolean: Boolean) {
         tryOpenNotify.value = boolean
     }
 
     fun getDeviceName(): String {
-        val name = bleDevice?.get()?.name;
-        if (name != null) {
-            return name;
-        }
-
-        return "";
+        val name = bleDevice?.get()?.name
+        return name ?: ""
     }
 
     fun initPath() {
@@ -301,9 +290,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
         if (basepath == null) {
             basepath = Environment.getExternalStorageDirectory().absolutePath
         }
+
         localBasePath = basepath!!
-        savePath = basepath + "/SDKDemo/Device_update/"
-        println("下载地址：" + savePath)
+        savePath = "$basepath/SDKDemo/Device_update/"
+        println("Download path: $savePath")
     }
 
     fun connect(newBleDevice: BleDevice?) {
@@ -316,11 +306,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun getRssi() {
         BleManager.getInstance().readRssi(bleDevice!!.get(), object : BleRssiCallback() {
             override fun onRssiSuccess(rssi: Int) {
-                bleResponseLabel.value = "信号强度：" + rssi
+                bleResponseLabel.value = "Signal strength: $rssi"
             }
 
             override fun onRssiFailure(exception: BleException?) {
-                TODO("Not yet implemented")
+                // Not implemented
             }
         })
     }
@@ -331,20 +321,23 @@ class BleViewModel() : ViewModel(), KoinComponent {
             NotifyServiceUUID.toString(),
             NotifyCharacteristicUUID.toString(),
             object : BleIndicateCallback() {
+
                 override fun onIndicateSuccess() {
-                    bleMessage.value = "打开indicate成功"
+                    bleMessage.value = "Indicate opened successfully"
                     handleOpenSuccess()
                 }
 
                 override fun onIndicateFailure(exception: BleException?) {
-                    bleMessage.value = "打开indicate失败：$exception"
+                    bleMessage.value = "Failed to open indicate: $exception"
                 }
 
                 @SuppressLint("MissingPermission", "NewApi")
                 override fun onCharacteristicChanged(data: ByteArray) {
-                    StarmaxBleClient.instance.notify(data)
+                    // Data received from BLE notify
+                    StarmaxBleClient.instance.notify(data) //todo ===== here byte data is received from Ble notify
                 }
-            })
+            }
+        )
     }
 
     fun openNotify(newBleDevice: BleDevice?) {
@@ -353,6 +346,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             NotifyServiceUUID.toString(),
             NotifyCharacteristicUUID.toString(),
             object : BleNotifyCallback() {
+
                 @RequiresApi(Build.VERSION_CODES.O)
                 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
                 override fun onNotifySuccess() {
@@ -362,22 +356,22 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         BluetoothDevice.PHY_LE_2M,
                         BluetoothDevice.PHY_OPTION_NO_PREFERRED
                     )
-
                     handleOpenSuccess()
-
                 }
 
                 override fun onNotifyFailure(exception: BleException) {
-                    bleMessage.value = "Failed to open notify：$exception"
+                    bleMessage.value = "Failed to open notify: $exception"
                 }
 
                 @SuppressLint("MissingPermission", "NewApi")
                 override fun onCharacteristicChanged(data: ByteArray) {
-                    //Utils.p(data)
-                    println(StarmaxBleClient.instance.notify(data))  // << ===================== here data received from ble notify ==========
+                    // Data received from BLE notify
+                    println(StarmaxBleClient.instance.notify(data))  //todo ===== here byte data is received from Ble notify
                 }
-            })
+            }
+        )
     }
+
 
     private fun handleOpenSuccess() {
         TestRepository.testLocal(localBasePath, Date().toString() + "\n", "log.txt")
@@ -400,20 +394,19 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                             .joinToString(",") { minuteByteArray ->
                                                 minuteByteArray.reversed()
                                                     .joinToString("") { minuteByte ->
-                                                        String.format(
-                                                            "%02X",
-                                                            minuteByte
-                                                        )
+                                                        String.format("%02X", minuteByte)
                                                     }
                                             }
                                     })
                             }.joinToString("\n")
+                        print(originData.value)
                     } else {
-                        originData.value = it.byteArray.map { String.format("%02X", it) }.toString()
+                        originData.value = it.byteArray.map { String.format("%02X", it) }.toString()  //todo === decimal integer to 2 digit hexadecimal integer =====
+                        print(originData.value)
                     }
                     //bleResponse.value = it.data.toString()
 
-                    if (it.data is Notify.Reply) {//TODO Sometimes the saiwei.txt file isn't saved; the goal is to save it every time.
+                    if (it.data is Notify.Reply) {  //TODO Sometimes the saiwei.txt file isn't saved; the goal is to save it every time.
                         if ((it.data as Notify.Reply).type == NotifyType.Log.name) {
                             Utils.p(it.byteArray)
                             TestRepository.testLocal(
@@ -688,7 +681,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun pair() {
         initData()
         StarmaxBleClient.instance.pair().subscribe({
-            bleResponseLabel.value = "佩戴状态:" + it.pairStatus
+            bleResponseLabel.value = "Wearing status: " + it.pairStatus
         }, {
 
         }).let {
@@ -699,7 +692,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun pairGts10(type: Int) {
         initData()
         StarmaxBleClient.instance.pairGts10(type).subscribe({
-            bleResponseLabel.value = "佩戴状态:" + it.pairStatus
+            bleResponseLabel.value = "Wearing status: " + it.pairStatus
         }, {
 
         }).let {
@@ -712,7 +705,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         Utils.p(StarmaxSend().getBtStatus())
 
         StarmaxBleClient.instance.getBtStatus().subscribe({
-            bleResponseLabel.value = "bt状态:" + it.btStatus
+            bleResponseLabel.value = "BT status: " + it.btStatus
         }, {
 
         }).let {
@@ -723,17 +716,21 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun findDevice(isFind: Boolean) {
         initData()
         StarmaxBleClient.instance.findDevice(isFind = isFind).subscribe({
-            bleResponseLabel.value = "查找手环成功"
-        }, {}).let {
+            bleResponseLabel.value = "Device found successfully"
+        }, {
 
+        }).let {
         }
     }
 
     fun getPower() {
         initData()
         StarmaxBleClient.instance.getPower().subscribe({
-            bleResponseLabel.value = ("电量:${it.power}\n" + "是否充电:${it.isCharge}")
-        }, {}).let {
+            bleResponseLabel.value =
+                ("Battery level: ${it.power}\n" + "Charging: ${it.isCharge}")
+        }, {
+
+        }).let {
             sendDisposable.add(it)
         }
     }
@@ -742,8 +739,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         val calendar = Calendar.getInstance()
         val lastMills = calendar.timeInMillis
+
         StarmaxBleClient.instance.getVersion().subscribe({
             val currentCalendar = Calendar.getInstance()
+
             bleModel = it.model
             bleVersion = it.version
             bleUiVersion = it.uiVersion
@@ -751,29 +750,32 @@ class BleViewModel() : ViewModel(), KoinComponent {
             lcdWidth = it.lcdWidth
             lcdHeight = it.lcdHeight
 
-            if (labelVisible) {//目的是发送表盘时需要bleModel实例
+            // Purpose: bleModel is required when sending watch faces
+            if (labelVisible) {
                 bleResponseLabel.value = (
-                        "固件版本:${bleVersion}\n"
-                                + "ui版本:${bleUiVersion}\n"
-                                + "设备接收buf大小:${it.bufferSize}\n"
-                                + "lcd宽:${it.lcdWidth}\n"
-                                + "lcd高:${it.lcdHeight}\n"
-                                + "屏幕类型:${it.screenType}\n"
-                                + "设备型号:${bleModel}\n"
-                                + "ui是否强制升级:${it.uiForceUpdate}\n"
-                                + "是否支持差分升级:${uiSupportDifferentialUpgrade}\n"
-                                + "是否支持血糖:${it.supportSugar}\n"
-                                + "设备协议版本:${it.protocolVersion}\n"
-                                + "app协议版本:${StarmaxSend().version()}\n"
-                                + "是否支持新睡眠:${it.sleepVersion}\n"
-                                + "睡眠展示方式:${it.sleepShowType}\n"
-                                + "是否支持睡眠计划:${it.supportSleepPlan}\n"
-                                + "是否支持双向运动:${it.supportSyncSport}\n"
-                                + "表盘版本号:${it.dialVersion}\n"
-                                + "耗时：${currentCalendar.timeInMillis - lastMills}"
+                        "Firmware version: $bleVersion\n" +
+                                "UI version: $bleUiVersion\n" +
+                                "Device receive buffer size: ${it.bufferSize}\n" +
+                                "LCD width: ${it.lcdWidth}\n" +
+                                "LCD height: ${it.lcdHeight}\n" +
+                                "Screen type: ${it.screenType}\n" +
+                                "Device model: $bleModel\n" +
+                                "UI force update: ${it.uiForceUpdate}\n" +
+                                "Supports differential upgrade: $uiSupportDifferentialUpgrade\n" +
+                                "Supports blood sugar: ${it.supportSugar}\n" +
+                                "Device protocol version: ${it.protocolVersion}\n" +
+                                "App protocol version: ${StarmaxSend().version()}\n" +
+                                "Supports new sleep: ${it.sleepVersion}\n" +
+                                "Sleep display type: ${it.sleepShowType}\n" +
+                                "Supports sleep plan: ${it.supportSleepPlan}\n" +
+                                "Supports two-way sport sync: ${it.supportSyncSport}\n" +
+                                "Watch face version: ${it.dialVersion}\n" +
+                                "Time consumed: ${currentCalendar.timeInMillis - lastMills}"
                         )
             }
-        }, {}).let {
+        }, {
+
+        }).let {
             sendDisposable.add(it)
         }
     }
@@ -782,11 +784,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.setTime().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置时区成功"
+                bleResponseLabel.value = "Time set successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
+        }, {
+
+        }).let {
             sendDisposable.add(it)
         }
     }
@@ -795,11 +799,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.setTimeOffset().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置时区成功"
+                bleResponseLabel.value = "Time zone set successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
+        }, {
+
+        }).let {
             sendDisposable.add(it)
         }
     }
@@ -808,14 +814,17 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getTimeOffset().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "获取时区成功"
+                bleResponseLabel.value = "Time zone retrieved successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
+        }, {
+
+        }).let {
             sendDisposable.add(it)
         }
     }
+
 
     fun getHealthDetail() {
         initData()
@@ -872,7 +881,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             )
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置闹钟成功"
+                bleResponseLabel.value = "\n" + "Alarm set successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -905,7 +914,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             1
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置久坐成功"
+                bleResponseLabel.value = "Set up sedentary successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -938,7 +947,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             1
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置喝水成功"
+                bleResponseLabel.value = "Set drinking water successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -951,18 +960,23 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.sendMessage(
             MessageType.Other,
-            "新消息",
-            "我觉得能接收十个字的我觉得能接收十个字的我觉得能接收十个字的我觉得能接收十个字的我觉得能接收十个字的我觉得能接收十个字的我觉得能接收十个字的"
+            "New message",
+            "I think it can receive ten characters. I think it can receive ten characters. " +
+                    "I think it can receive ten characters. I think it can receive ten characters. " +
+                    "I think it can receive ten characters. I think it can receive ten characters. " +
+                    "I think it can receive ten characters."
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "发送消息成功"
+                bleResponseLabel.value = "Message sent successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
+        }, {
+        }).let {
             sendDisposable.add(it)
         }
     }
+
 
     fun setWeather() {
         initData()
@@ -975,7 +989,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             )
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置天气成功"
+                bleResponseLabel.value = "Set weather successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -988,7 +1002,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getWeatherSeven().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "读取天气成功"
+                bleResponseLabel.value = "Read weather successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1003,7 +1017,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun setWeatherSeven() {
         initData()
         StarmaxBleClient.instance.setWeatherSeven(
-            cityName = "深圳市",
+            cityName = "Shenzhen City",  // 深圳市
             arrayListOf(
                 WeatherDay(
                     -60,
@@ -1160,7 +1174,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
             )
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置天气成功"
+                bleResponseLabel.value = "\n" +
+                        "Set weather successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1173,7 +1188,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getSummerWorldClock().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "读取天气成功"
+                bleResponseLabel.value = "\n" + "Read weather successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1205,7 +1220,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             )
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "设置世界时钟成功"
+                bleResponseLabel.value = "Set world clock successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1217,30 +1232,31 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun sendMusic() {
         initData()
         StarmaxBleClient.instance.musicControl(
-            1, 20, 30, "Умри если меня не любишь (不爱我就去死吧)", ""
+            1, 20, 30,
+            "Die if you don’t love me (不爱我就去死吧)",
+            ""
         ).subscribe({
-            bleResponseLabel.value = "音乐控制成功"
+            bleResponseLabel.value = "Music control succeeded"
         }, {}).let {
             sendDisposable.add(it)
         }
     }
 
-    fun getLog() {//TODO
-//        initData()
-//        StarmaxBleClient.instance.getLog().subscribe({
-//            bleResponseLabel.value = "获取log成功"
-//        }, {}).let {
-//            sendDisposable.add(it)
-//        }
+    fun getLog() { // TODO
+//    initData()
+//    StarmaxBleClient.instance.getLog().subscribe({
+//        bleResponseLabel.value = "Log retrieved successfully"
+//    }, {}).let {
+//        sendDisposable.add(it)
+//    }
     }
 
     fun getCustomDeviceMode() {
         initData()
         StarmaxBleClient.instance.getCustomDeviceMode().subscribe({
             if (it.status == 0) {
-                val modeStr = if (it.mode == 0) "正常模式" else "上课模式"
-
-                bleResponseLabel.value = "类型:${it.type},模式:${modeStr}"
+                val modeStr = if (it.mode == 0) "Normal mode" else "Class mode"
+                bleResponseLabel.value = "Type: ${it.type}, Mode: $modeStr"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1266,7 +1282,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getCustomDeviceName().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "类型:${it.type},名称:${it.deviceName}"
+                bleResponseLabel.value = "Type: ${it.type}, Name: ${it.deviceName}"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1292,26 +1308,24 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getCustomDeviceDailyData().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = ("设备名称:${it.deviceName}\n"
-                        + "当前模式:${it.mode}\n"
-                        + "心率:${it.heartRate}\n"
-                        + "步数:${it.steps}\n"
-                        + "血压:${it.ss}/${it.fz}\n"
-                        + "血氧:${it.oxygen}\n"
-                        + "血糖:${it.bloodSugar}\n"
-                        + "温度:${it.temp}\n"
-                        + "梅脱:${it.met}\n"
-                        + "MAI:${it.mai}\n"
-                        + "压力:${it.stress}\n"
-                        + "卡路里:${it.calorie}\n"
-                        + "电量:${it.power}\n"
-                        )
+                bleResponseLabel.value =
+                    "Device name: ${it.deviceName}\n" +
+                            "Current mode: ${it.mode}\n" +
+                            "Heart rate: ${it.heartRate}\n" +
+                            "Steps: ${it.steps}\n" +
+                            "Blood pressure: ${it.ss}/${it.fz}\n" +
+                            "Blood oxygen: ${it.oxygen}\n" +
+                            "Blood sugar: ${it.bloodSugar}\n" +
+                            "Temperature: ${it.temp}\n" +
+                            "MET: ${it.met}\n" +
+                            "MAI: ${it.mai}\n" +
+                            "Stress: ${it.stress}\n" +
+                            "Calories: ${it.calorie}\n" +
+                            "Battery: ${it.power}\n"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-
-        }
+        }, {})
     }
 
     fun getSportMode() {
@@ -1319,12 +1333,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.getSportMode().subscribe({
             if (it.status == 0) {
                 var str = ""
-
                 val dataList = it.sportModesList
                 for (i in 0 until dataList.size) {
-                    str += "运动模式:${sportModeLabel(dataList[i])}\n"
+                    str += "Sport mode: ${sportModeLabel(dataList[i])}\n"
                 }
-
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
@@ -1338,7 +1350,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.setDisplayMode(isDisplay).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = if (isDisplay) "开启演示模式成功" else "关闭演示模式"
+                bleResponseLabel.value =
+                    if (isDisplay) "Demo mode enabled successfully"
+                    else "Demo mode disabled"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1351,7 +1365,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.setShipMode(isOpen).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = if (isOpen) "开启船运模式成功" else "关闭船运模式成功"
+                bleResponseLabel.value =
+                    if (isOpen) "Shipping mode enabled successfully"
+                    else "Shipping mode disabled successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1360,12 +1376,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }
     }
 
-
     fun getCustomDeviceShake() {
         initData()
         StarmaxBleClient.instance.getCustomDeviceShake().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "类型:${it.type},时间:${it.time}"
+                bleResponseLabel.value = "Type: ${it.type}, Time: ${it.time}"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1392,7 +1407,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.getCustomDeviceShakeOnOff().subscribe({
             if (it.status == 0) {
                 bleResponseLabel.value =
-                    "类型:${it.type},摇一摇:${it.shakeOnOff},抬腕:${it.handOnOff}"
+                    "Type: ${it.type}, Shake: ${it.shakeOnOff}, Wrist raise: ${it.handOnOff}"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1406,7 +1421,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.getCustomDeviceShakeTime().subscribe({
             if (it.status == 0) {
                 bleResponseLabel.value =
-                    "类型:${it.type},摇一摇次数:${it.shakeTimes},抬腕次数:${it.handTimes}"
+                    "Type: ${it.type}, Shake count: ${it.shakeTimes}, Wrist raise count: ${it.handTimes}"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1430,14 +1445,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun setSportMode() {
         initData()
-        StarmaxBleClient.instance.setSportMode(
-            listOf(
-                0x0A,
-                0x0B,
-                0x0C,
-                0x0D
-            )
-        ).subscribe({
+        StarmaxBleClient.instance.setSportMode(listOf(0x0A, 0x0B, 0x0C, 0x0D)).subscribe({
             if (it.status == 0) {
                 bleResponseLabel.value = it.toString()
             } else {
@@ -1450,38 +1458,43 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun sendHealthMeasure(isOpen: Boolean) {
         initData()
-        StarmaxBleClient.instance.sendHealthMeasure(HistoryType.Pressure, isOpen).subscribe({
-            bleResponseLabel.value = if (isOpen) "开启成功" else "关闭成功"
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        StarmaxBleClient.instance
+            .sendHealthMeasure(HistoryType.Pressure, isOpen)
+            .subscribe({
+                bleResponseLabel.value =
+                    if (isOpen) "Enabled successfully" else "Disabled successfully"
+            }, {}).let {
+                sendDisposable.add(it)
+            }
     }
 
     fun sendHeartRateHealthMeasure(isOpen: Boolean) {
         initData()
-        StarmaxBleClient.instance.sendHealthMeasure(HistoryType.HeartRate, isOpen).subscribe({
-            bleResponseLabel.value = if (isOpen) "开启成功" else "关闭成功"
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        StarmaxBleClient.instance
+            .sendHealthMeasure(HistoryType.HeartRate, isOpen)
+            .subscribe({
+                bleResponseLabel.value =
+                    if (isOpen) "Enabled successfully" else "Disabled successfully"
+            }, {}).let {
+                sendDisposable.add(it)
+            }
     }
 
     fun getDebugInfo(fileType: Int) {
         initData()
         StarmaxBleClient.instance.getDebugInfo(packageId, fileType).subscribe({
             if (it.status == 0) {
-                if (it.dataList.size > 0) {
+                if (it.dataList.isNotEmpty()) {
                     TestRepository.testLocal(
                         localBasePath,
                         if (fileType == 3) {
                             it.dataList.map { it.toByte() }.toByteArray()
-                                .toString(Charsets.US_ASCII).replace("TAG=", "\nTAG=")
+                                .toString(Charsets.US_ASCII)
+                                .replace("TAG=", "\nTAG=")
                         } else {
-                            it.dataList.map { String.format("0x%02X", it.toByte()) }.toList()
+                            it.dataList.map { String.format("0x%02X", it.toByte()) }
                                 .chunked(8)
-                                .map {
-                                    it.joinToString(",")
-                                }.joinToString(",\n") + ",\n\n\n"
+                                .joinToString(",\n") { it.joinToString(",") } + ",\n\n\n"
                         },
                         when (fileType) {
                             1 -> "battery.txt"
@@ -1490,12 +1503,14 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             else -> "sleep.txt"
                         }
                     )
-
                     packageId += 1
                     getDebugInfo(fileType)
                 }
+
                 bleResponseLabel.value =
-                    "获取" + (if (fileType == 1) "battery.txt" else "gsensor.txt") + "第" + packageId + "包"
+                    "Retrieved " +
+                            (if (fileType == 1) "battery.txt" else "gsensor.txt") +
+                            ", package $packageId"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1509,7 +1524,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.getSportHistory().subscribe({
             if (it.status == 0) {
                 bleResponseLabel.value =
-                    SportHistoryFactory(StarmaxBleClient.instance.bleNotify).buildMapFromProtobuf(it)
+                    SportHistoryFactory(StarmaxBleClient.instance.bleNotify)
+                        .buildMapFromProtobuf(it)
                         .toJson()
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
@@ -1521,29 +1537,26 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun getStepHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getStepHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str = "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val stepList = it.stepsList
-                for (i in 0 until stepList.size) {
-                    val oneData = stepList[i]
-                    str += ("时间:" + oneData.hour + ":" + oneData.minute
-                            + " 步数" + oneData.steps
-                            + ",卡路里" + ((oneData.calorie).toDouble() / 1000) + "千卡"
-                            + ",距离" + ((oneData.distance).toDouble() / 10) + "米\n")
+                it.stepsList.forEach { data ->
+                    str +=
+                        "Time: ${data.hour}:${data.minute} " +
+                                "Steps: ${data.steps}, " +
+                                "Calories: ${(data.calorie.toDouble() / 1000)} kcal, " +
+                                "Distance: ${(data.distance.toDouble() / 10)} m\n"
                 }
 
-                val sleepList = it.sleepsList
-                for (i in 0 until sleepList.size) {
-                    val oneData = sleepList[i]
-                    str += ("时间:" + oneData.hour + ":" + oneData.minute
-                            + " 睡眠状态" + oneData.sleepStatus + "\n")
+                it.sleepsList.forEach { data ->
+                    str +=
+                        "Time: ${data.hour}:${data.minute} " +
+                                "Sleep status: ${data.sleepStatus}\n"
                 }
 
                 bleResponseLabel.value = str
@@ -1557,19 +1570,19 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun getBloodPressureHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getBloodPressureHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 伸缩压" + oneData.ss + " 舒张压" + oneData.fz + "\n"
+                it.dataList.forEach { data ->
+                    str +=
+                        "Time: ${data.hour}:${data.minute} " +
+                                "Systolic: ${data.ss} Diastolic: ${data.fz}\n"
                 }
 
                 bleResponseLabel.value = str
@@ -1585,13 +1598,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getSleepClock().subscribe({
             if (it.status == 0) {
-                val str =
-                    ("入睡:${it.fallAsleepHour}:${it.fallAsleepMinute} ${it.fallAsleepOnOff}\n"
-                            + "起床:${it.getUpHour}:${it.getUpMinute} ${it.getUpOnOff}\n"
-                            + "重复:" + (it.repeatsList.map { it.toString() }.joinToString(","))
-                            + "提前" + it.reminderBeforeFallAsleep + "分钟提醒\n"
-                            )
-                bleResponseLabel.value = str
+                bleResponseLabel.value =
+                    "Fall asleep: ${it.fallAsleepHour}:${it.fallAsleepMinute} ${it.fallAsleepOnOff}\n" +
+                            "Wake up: ${it.getUpHour}:${it.getUpMinute} ${it.getUpOnOff}\n" +
+                            "Repeat: ${it.repeatsList.joinToString(",")}\n" +
+                            "Reminder ${it.reminderBeforeFallAsleep} minutes before sleep\n"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1599,6 +1610,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             sendDisposable.add(it)
         }
     }
+
 
     fun setSleepClock() {
         initData()
@@ -1626,186 +1638,157 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun getHeartRateHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getHeartRateHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 心率" + oneData.value + "%\n"
+                it.dataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Heart rate: ${data.value}%\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getExerciseHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getExerciseHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val exerciseDataList = it.exerciseDataList
-                for (i in 0 until exerciseDataList.size) {
-                    val oneData = exerciseDataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 中高强度" + oneData.value + "\n"
+                it.exerciseDataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Moderate/High intensity: ${data.value}\n"
                 }
 
-                val standDataList = it.standDataList
-                for (i in 0 until standDataList.size) {
-                    val oneData = standDataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 站立" + oneData.value + "\n"
+                it.standDataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Standing: ${data.value}\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getBloodOxygenHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getBloodOxygenHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 血氧" + oneData.value + "%\n"
+                it.dataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Blood oxygen: ${data.value}%\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getRespirationRateHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getRespirationRateHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 呼吸率" + oneData.value + "%\n"
+                it.dataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Respiration rate: ${data.value}%\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getPressureHistory(time: Long) {
         initData()
-
         changeMtu {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = time
+            val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
             StarmaxBleClient.instance.getPressureHistory(calendar).subscribe({
                 if (it.status == 0) {
-                    var str = ("采样间隔:" + it.interval + "分钟\n"
-                            + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                            + "数据长度:" + it.dataLength + "\n"
-                            )
+                    var str =
+                        "Sampling interval: ${it.interval} minutes\n" +
+                                "Date: ${it.year}-${it.month}-${it.day}\n" +
+                                "Data length: ${it.dataLength}\n"
 
-                    val dataList = it.dataList
-                    for (i in 0 until dataList.size) {
-                        val oneData = dataList[i]
-                        str += "时间:" + oneData.hour + ":" + oneData.minute + " 压力" + oneData.value + "%\n"
+                    it.dataList.forEach { data ->
+                        str += "Time: ${data.hour}:${data.minute} Stress: ${data.value}%\n"
                     }
 
                     bleResponseLabel.value = str
                 } else {
                     bleResponseLabel.value = statusLabel(it.status)
                 }
-            }, {}).let {
-                sendDisposable.add(it)
-            }
+            }, {}).let { sendDisposable.add(it) }
         }
     }
 
     fun getMetHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getMetHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "梅脱:" + oneData
+                it.dataList.forEach { value ->
+                    str += "MET: $value\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getOriginSleepHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getOriginSleepHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    if (oneData.value > 0) {
-                        val valueList = Utils.int2byte(oneData.value, 2)
-                        str += "时间:" + oneData.hour + ":" + oneData.minute + " 红外:" + valueList[1] + " sar:" + (valueList[0] * 256) + "\n"
+                it.dataList.forEach { data ->
+                    if (data.value > 0) {
+                        val valueList = Utils.int2byte(data.value, 2)
+                        str += "Time: ${data.hour}:${data.minute} Infrared: ${valueList[1]} SAR: ${valueList[0] * 256}\n"
                     }
                 }
 
@@ -1813,27 +1796,23 @@ class BleViewModel() : ViewModel(), KoinComponent {
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getShakeHeadHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getShakeHeadHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    if (oneData.value > 0) {
-                        str += "时间:" + oneData.hour + ":" + oneData.minute + " 摇头:" + oneData.value + "\n"
+                it.dataList.forEach { data ->
+                    if (data.value > 0) {
+                        str += "Time: ${data.hour}:${data.minute} Head shake: ${data.value}\n"
                     }
                 }
 
@@ -1841,105 +1820,98 @@ class BleViewModel() : ViewModel(), KoinComponent {
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getTempHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getTempHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 温度" + oneData.value + "%\n"
+                it.dataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value}%\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getMaiHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getMaiHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "MAI:" + oneData
+                it.dataList.forEach { value ->
+                    str += "MAI: $value\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getBloodSugarHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getBloodSugarHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    str += "时间:" + oneData.hour + ":" + oneData.minute + " 血糖" + oneData.value + "\n"
+                it.dataList.forEach { data ->
+                    str += "Time: ${data.hour}:${data.minute} Blood sugar: ${data.value}\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getCustomHealthGoalsHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getCustomHealthGoalsHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("日期:" + it.year + "-" + it.month + "-" + it.day + "\n\n")
+                var str = "Date: ${it.year}-${it.month}-${it.day}\n\n"
 
-                it.goalInfosList.forEach { goalInfo ->
-                    str += "-------------------------\n处方索引:${goalInfo.index}\n开始日期:${goalInfo.startYear}-${goalInfo.startMonth}-${goalInfo.startDay}\n结束日期:${goalInfo.endYear}-${goalInfo.endMonth}-${goalInfo.endDay}\n----------------------------\n\n"
-                    goalInfo.taskInfosList.forEach { taskInfo ->
-                        str += "任务索引:${taskInfo.index}\n状态:${taskInfo.status}\n完成百分比:${taskInfo.scale},实时计时${taskInfo.realSeconds}\n"
-                        str += "目标时间:${taskInfo.goalMinutes},实际时间:${taskInfo.completeMinutes}\n"
-                        str += "执行任务时间:${taskInfo.goalStartHour}:${taskInfo.goalStartMinute}-${taskInfo.goalEndHour}:${taskInfo.goalEndMinute}\n"
-                        str += "平均心率:${taskInfo.avgHeartRate},平均步频:${taskInfo.avgStepFreq}\n"
-                        str += "处方任务产生步数:${taskInfo.steps}\n\n"
+                it.goalInfosList.forEach { goal ->
+                    str += "-------------------------\n" +
+                            "Prescription index: ${goal.index}\n" +
+                            "Start date: ${goal.startYear}-${goal.startMonth}-${goal.startDay}\n" +
+                            "End date: ${goal.endYear}-${goal.endMonth}-${goal.endDay}\n" +
+                            "-------------------------\n\n"
+
+                    goal.taskInfosList.forEach { task ->
+                        str += "Task index: ${task.index}\n" +
+                                "Status: ${task.status}\n" +
+                                "Completion: ${task.scale}%, Real time: ${task.realSeconds}s\n" +
+                                "Goal time: ${task.goalMinutes}, Actual time: ${task.completeMinutes}\n" +
+                                "Task time: ${task.goalStartHour}:${task.goalStartMinute}-${task.goalEndHour}:${task.goalEndMinute}\n" +
+                                "Avg HR: ${task.avgHeartRate}, Avg step freq: ${task.avgStepFreq}\n" +
+                                "Steps from task: ${task.steps}\n\n"
                     }
                 }
 
@@ -1947,70 +1919,64 @@ class BleViewModel() : ViewModel(), KoinComponent {
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getSleepHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
+
         StarmaxBleClient.instance.getSleepHistory(calendar).subscribe({
             if (it.status == 0) {
-                var str = ("采样间隔:" + it.interval + "分钟\n"
-                        + "日期:" + it.year + "-" + it.month + "-" + it.day + "\n"
-                        + "数据长度:" + it.dataLength + "\n"
-                        )
+                var str =
+                    "Sampling interval: ${it.interval} minutes\n" +
+                            "Date: ${it.year}-${it.month}-${it.day}\n" +
+                            "Data length: ${it.dataLength}\n"
 
-                val dataList = it.dataList
-                for (i in 0 until dataList.size) {
-                    val oneData = dataList[i]
-                    if (oneData.status != 0) {
-                        str += "时间:" + oneData.hour + ":" + oneData.minute + " 状态" + oneData.status + "\n"
+                it.dataList.forEach { data ->
+                    if (data.status != 0) {
+                        str += "Time: ${data.hour}:${data.minute} Status: ${data.status}\n"
                     }
-
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
 
     fun getGoalsDayAndNightHistory(time: Long) {
         initData()
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
-        StarmaxBleClient.instance.getGoalsDayAndNightHistory(calendar).subscribe({ it ->
-            if (it.status == 0) {
-                var str = ("日期:" + it.year + "-" + it.month + "-" + it.day + "\n\n")
+        val calendar = Calendar.getInstance().apply { timeInMillis = time }
 
-                str += "总步数：${it.totalSteps},目标:${it.totalStepGoals}\n\n"
-                str += "朝朝：\n"
-                it.dayGoals.let { n ->
-                    str += "步数：${n.steps},目标:${n.stepGoals}\n"
-                    str += "时间:${n.startHour}:${n.startMinute}-${n.endHour}:${n.endMinute}\n"
-                    str += "完成状态:${n.status}\n\n"
+        StarmaxBleClient.instance.getGoalsDayAndNightHistory(calendar).subscribe({
+            if (it.status == 0) {
+                var str = "Date: ${it.year}-${it.month}-${it.day}\n\n"
+
+                str += "Total steps: ${it.totalSteps}, Goal: ${it.totalStepGoals}\n\n"
+
+                str += "Day:\n"
+                it.dayGoals.let { d ->
+                    str += "Steps: ${d.steps}, Goal: ${d.stepGoals}\n"
+                    str += "Time: ${d.startHour}:${d.startMinute}-${d.endHour}:${d.endMinute}\n"
+                    str += "Status: ${d.status}\n\n"
                 }
-                str += "暮暮：\n"
-                it.nightGoals.let { m ->
-                    str += "步数：${m.steps},目标:${m.stepGoals}\n"
-                    str += "时间:${m.startHour}:${m.startMinute}-${m.endHour}:${m.endMinute}\n"
-                    str += "完成状态:${m.status}\n\n"
+
+                str += "Night:\n"
+                it.nightGoals.let { n ->
+                    str += "Steps: ${n.steps}, Goal: ${n.stepGoals}\n"
+                    str += "Time: ${n.startHour}:${n.startMinute}-${n.endHour}:${n.endMinute}\n"
+                    str += "Status: ${n.status}\n\n"
                 }
 
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
+
 
     fun getValidHistoryDates() {
         initData()
@@ -2033,32 +1999,33 @@ class BleViewModel() : ViewModel(), KoinComponent {
             if (it.status == 0) {
                 var str = ""
                 val languageList = listOf(
-                    "简体中文",
-                    "繁体中文",
-                    "英文",
-                    "俄语",
-                    "法语",
-                    "西班牙语",
-                    "德语",
-                    "日语",
-                    "意大利语",
-                    "韩语",
-                    "荷兰语",
-                    "泰语",
-                    "越南语",
-                    "马来语",
-                    "印尼语",
-                    "葡萄牙语",
-                    "罗马尼亚语",
-                    "波兰语",
-                    "土耳其语",
-                    "蒙古语",
-                    "印地语",
-                    "阿拉伯语"
+                    "Simplified Chinese",
+                    "Traditional Chinese",
+                    "English",
+                    "Russian",
+                    "French",
+                    "Spanish",
+                    "German",
+                    "Japanese",
+                    "Italian",
+                    "Korean",
+                    "Dutch",
+                    "Thai",
+                    "Vietnamese",
+                    "Malay",
+                    "Indonesian",
+                    "Portuguese",
+                    "Romanian",
+                    "Polish",
+                    "Turkish",
+                    "Mongolian",
+                    "Hindi",
+                    "Arabic"
                 )
-                val dataList = it.languagesList.map { language ->
+
+                val dataList = it.languagesList.joinToString("\n") { language ->
                     languageList[language]
-                }.joinToString("\n")
+                }
 
                 bleResponseLabel.value = dataList
             } else {
@@ -2121,7 +2088,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getCustomValidHistoryDates(historyType).subscribe({
             if (it.status == 0) {
-                var str = "有效日期\n"
+                var str = "Valid dates\n"
 
                 val dataList = it.dataList
                 for (i in 0 until dataList.size) {
@@ -2149,9 +2116,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     model = bleModel,
                     version = bleUiVersion,
                     onSuccess = { ui, _ ->
-                        if (ui == null) {
-                            return@getVersion
-                        }
+                        if (ui == null) return@getVersion
 
                         val file = File(savePath)
                         if (!file.exists()) file.mkdirs()
@@ -2169,18 +2134,17 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                                 val fis = FileInputStream(apkFile)
                                                 BleFileSender.initFile(
                                                     fis,
-                                                    object :
-                                                        BleFileSenderListener() {
+                                                    object : BleFileSenderListener() {
                                                         override fun onSuccess() {}
                                                         override fun onTotalSuccess() {}
 
                                                         override fun onProgress(progress: Double) {
                                                             bleMessage.value =
-                                                                "当前进度${progress}%"
+                                                                "Current progress ${progress}%"
                                                         }
 
                                                         override fun onFailure(status: Int) {
-                                                            bleMessage.value = "安装失败"
+                                                            bleMessage.value = "Installation failed"
                                                         }
 
                                                         override fun onStart() {
@@ -2189,14 +2153,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                                             sendMsg(data)
                                                         }
 
-                                                        override fun onCheckSum() {
-
-                                                        }
-
-                                                        override fun onSendComplete() {
-
-                                                        }
-
+                                                        override fun onCheckSum() {}
+                                                        override fun onSendComplete() {}
                                                         override fun onSend() {
                                                             if (BleFileSender.hasNext()) {
                                                                 val data = StarmaxSend().sendFile()
@@ -2206,34 +2164,32 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                                     })
 
                                                 BleFileSender.sliceBuffer = 8
-
                                                 BleFileSender.onStart()
                                             } catch (e: FileNotFoundException) {
-                                                bleMessage.value = "文件未找到"
+                                                bleMessage.value = "File not found"
                                                 e.printStackTrace()
                                             }
                                         }
                                     }
-                                } catch (e: java.lang.Exception) {
-                                    bleMessage.value = "服务器错误"
+                                } catch (e: Exception) {
+                                    bleMessage.value = "Server error"
                                     e.printStackTrace()
                                 }
                             }
                         }.start()
                     },
                     onError = { e ->
-                        bleMessage.value = "服务器错误"
+                        bleMessage.value = "Server error"
                         e?.printStackTrace()
                     })
             }
         }.start()
-
     }
 
     fun sendUiDiff() {
         initData()
         if (!uiSupportDifferentialUpgrade) {
-            bleMessage.value = "当前设备不支持UI差分升级"
+            bleMessage.value = "The current device does not support UI differential upgrade"
             return
         }
         object : Thread() {
@@ -2242,9 +2198,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     model = bleModel,
                     version = bleUiVersion,
                     onSuccess = { ui, _ ->
-                        if (ui == null) {
-                            return@getDiff
-                        }
+                        if (ui == null) return@getDiff
 
                         val file = File(savePath)
                         if (!file.exists()) file.mkdirs()
@@ -2260,38 +2214,26 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                         changeMtu {
                                             try {
                                                 val fis = FileInputStream(apkFile)
-
                                                 BleFileSender.initFile(
                                                     fis,
-                                                    object :
-                                                        BleFileSenderListener() {
+                                                    object : BleFileSenderListener() {
                                                         override fun onSuccess() {}
                                                         override fun onTotalSuccess() {}
 
                                                         override fun onProgress(progress: Double) {
                                                             bleMessage.value =
-                                                                "当前进度${progress}%"
+                                                                "Current progress ${progress}%"
                                                         }
 
                                                         override fun onFailure(status: Int) {}
-
                                                         override fun onStart() {
                                                             val data = StarmaxSend()
-                                                                .sendUi(
-                                                                    offset = ui.offset,
-                                                                    ui.version
-                                                                )
+                                                                .sendUi(offset = ui.offset, ui.version)
                                                             sendMsg(data)
                                                         }
 
-                                                        override fun onCheckSum() {
-
-                                                        }
-
-                                                        override fun onSendComplete() {
-
-                                                        }
-
+                                                        override fun onCheckSum() {}
+                                                        override fun onSendComplete() {}
                                                         override fun onSend() {
                                                             if (BleFileSender.hasNext()) {
                                                                 val data = StarmaxSend().sendFile()
@@ -2301,54 +2243,44 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                                     })
 
                                                 BleFileSender.sliceBuffer = 8
-
                                                 BleFileSender.onStart()
                                             } catch (e: FileNotFoundException) {
-                                                bleMessage.value = "文件未找到"
+                                                bleMessage.value = "File not found"
                                                 e.printStackTrace()
                                             }
                                         }
                                     }
-                                } catch (e: java.lang.Exception) {
-                                    bleMessage.value = "服务器错误"
+                                } catch (e: Exception) {
+                                    bleMessage.value = "Server error"
                                     e.printStackTrace()
                                 }
                             }
                         }.start()
                     },
                     onError = { e ->
-                        bleMessage.value = "服务器错误"
+                        bleMessage.value = "Server error"
                         e?.printStackTrace()
                     })
             }
         }.start()
-
     }
 
     fun sendUiLocal(context: Context, uri: Uri) {
         initData()
         try {
             val fis = context.contentResolver.openInputStream(uri)
-
             BleFileSender.initFile(
                 fis,
-                object :
-                    BleFileSenderListener() {
+                object : BleFileSenderListener() {
                     override fun onSuccess() {}
                     override fun onTotalSuccess() {}
 
                     override fun onProgress(progress: Double) {
-                        bleMessage.value = "当前进度${progress}%"
+                        bleMessage.value = "Current progress ${progress}%"
                     }
 
-                    override fun onCheckSum() {
-
-                    }
-
-                    override fun onSendComplete() {
-
-                    }
-
+                    override fun onCheckSum() {}
+                    override fun onSendComplete() {}
                     override fun onFailure(status: Int) {}
 
                     override fun onStart() {
@@ -2358,7 +2290,6 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
                     override fun onSend() {
                         if (BleFileSender.hasNext()) {
-                            println()
                             val data = StarmaxSend().sendFile()
                             sendMsg(data)
                         }
@@ -2366,20 +2297,16 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 })
 
             BleFileSender.sliceBuffer = 8
-
             BleFileSender.onStart()
         } catch (e: FileNotFoundException) {
-            bleMessage.value = "未找到文件"
+            bleMessage.value = "File not found"
             e.printStackTrace()
         }
     }
 
     fun sendDialV2Local(context: Context, uri: Uri) {
         initData()
-        val fis = context.contentResolver.openInputStream(uri)
-        if (fis == null) {
-            return
-        }
+        val fis = context.contentResolver.openInputStream(uri) ?: return
         val file = File(savePath)
         if (!file.exists()) file.mkdirs()
         val saveName = savePath + "dialv2.zip"
@@ -2388,7 +2315,6 @@ class BleViewModel() : ViewModel(), KoinComponent {
         if (apkFile.exists()) apkFile.delete()
 
         NetFileUtils.copyUpdateFile(fis, File(saveName)) {
-
             val destinationDir = File(savePath + "/zip/")
             val filePaths = unzipAndGetFilePaths(File(saveName), destinationDir).filter {
                 (!it.contains("_md5.bin")) && it.contains(".bin")
@@ -2407,6 +2333,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     "current_file" to currentFile
                 )
             }
+
             filePaths.forEach {
                 Log.e("BleViewModel", "relative_path:${it["relative_path"]},md5:${it["md5"]}")
                 if ((it["relative_path"] as String).contains("DialLayout.bin")) {
@@ -2424,20 +2351,16 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             fos.flush()
                         }
                     }
-
                 }
             }
 
             changeMtu {
                 try {
-
                     if (filePaths.isNotEmpty()) {
                         sendFileV2(0, filePaths)
                     }
-
-
                 } catch (e: FileNotFoundException) {
-                    bleMessage.value = "服务器错误"
+                    bleMessage.value = "Server error"
                     e.printStackTrace()
                 }
             }
@@ -2448,25 +2371,15 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         lcdWidth = 410
         lcdHeight = 502
-        Log.d("imageUri", imageUri.toString());
-        Log.d("binUri", binUri.toString());
+        Log.d("imageUri", imageUri.toString())
+        Log.d("binUri", binUri.toString())
 
-        if (binUri == null) {
-            return
-        }
-
-        if (imageUri == null) {
-            return
-        }
-
+        if (binUri == null || imageUri == null) return
 
         val bin = context.contentResolver.openInputStream(binUri!!) as FileInputStream?
-        val img =
-            context.contentResolver.openInputStream(imageUri!!) as FileInputStream? ?: return
+        val img = context.contentResolver.openInputStream(imageUri!!) as FileInputStream? ?: return
 
-        if (bin == null) {
-            return
-        }
+        if (bin == null) return
 
         val file = File(savePath)
         if (!file.exists()) file.mkdirs()
@@ -2475,9 +2388,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
         val apkFile = File(saveName)
         if (apkFile.exists()) apkFile.delete()
 
-        NetFileUtils.copyUpdateFile(bin, File(saveName)) {//TODO
+        NetFileUtils.copyUpdateFile(bin, File(saveName)) {
             val destinationDir = File(savePath + "/zip/")
-
             val filePathsList = unzipAndGetFilePaths(File(saveName), destinationDir).filter {
                 (!it.contains("_md5.bin")) && it.contains(".bin")
             }.toMutableList()
@@ -2556,37 +2468,17 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 }
 
                 if ((it["relative_path"] as String).contains("ezip/0000.bin")) {
-
                     val currentFile = it["current_file"] as File
-
                     var srcBitmap = BitmapFactory.decodeStream(img)
-
-                    srcBitmap = com.starmax.sdkdemo.utils.BmpUtils.convertSize(
-                        srcBitmap,
-                        lcdWidth,
-                        lcdHeight
-                    )
+                    srcBitmap = com.starmax.sdkdemo.utils.BmpUtils.convertSize(srcBitmap, lcdWidth, lcdHeight)
 
                     val outputStream = ByteArrayOutputStream()
-
-                    // 3. 将 Bitmap 写入 PNG 格式
+                    // Write Bitmap into PNG format
                     srcBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
 
                     Log.d("pngData", "${FileValidator.isPngData(outputStream.toByteArray())}")
-                    val bmpCopy =
-                        sifliEzipUtil.pngToEzip(outputStream.toByteArray(), "rgb565A", 0, 1, 2)
-                    Log.d(
-                        "pngDataZip",
-                        "${
-                            sifliEzipUtil.pngToEzip(
-                                outputStream.toByteArray(),
-                                "rgb565A",
-                                0,
-                                1,
-                                2
-                            ).size
-                        }"
-                    )
+                    val bmpCopy = sifliEzipUtil.pngToEzip(outputStream.toByteArray(), "rgb565A", 0, 1, 2)
+                    Log.d("pngDataZip", "${bmpCopy.size}")
 
                     FileOutputStream(currentFile).use { fos ->
                         fos.write(bmpCopy)
@@ -2596,72 +2488,32 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     outputStream.flush()
                     outputStream.close()
                     srcBitmap.recycle()
-                } else {
-//                    val currentFile = it["current_file"] as File
-//                    val regex = Regex("/(\\d+)\\.bin")
-//                    val matchResult = regex.find(it["relative_path"] as String)
-//                    val filePath = "Numbers/${matchResult?.groupValues?.get(1)}.png"
-//
-//                    if (isAssetFileExists(filePath)) {
-//                        val bytes = FileUtils.inputStream2Bytes(FileInputStream(currentFile))
-//                        val imgNumber = context.assets.open(filePath)
-//
-//                        val srcBitmap = BitmapFactory.decodeStream(imgNumber)
-//
-//                        val bmpBytes = com.starmax.sdkdemo.utils.BmpUtils.convertColor(
-//                            srcBitmap,
-//                            lcdWidth,
-//                            lcdHeight
-//                        )
-//
-//                        val bmpCopy = bmpBytes // 不再需要截取文件头
-//
-//                        FileOutputStream(currentFile).use { fos ->
-//                            val header = bytes!!.sliceArray(0..3)
-//                            header[0] = 0x05
-//                            fos.write(header + bmpCopy)
-//                            fos.flush()
-//                        }
-//                        srcBitmap.recycle()
-//                    }
                 }
             }
 
-            println("开始改色")
+            println("Start color modification")
             filePaths.forEach {
-                val currentFile = (it["current_file"] as File)
+                val currentFile = it["current_file"] as File
                 if (canChangeColorFiles[currentFile.absolutePath] != null) {
                     println(currentFile.absolutePath)
                     val bytes = FileUtils.inputStream2Bytes(FileInputStream(currentFile))
                     if (bytes != null) {
-                        var newBytes = com.starmax.sdkdemo.utils.BmpUtils.argbConvertColor(
-                            bytes,
-                            0xFF,
-                            0x00,
-                            0x00
-                        )
-
+                        val newBytes = com.starmax.sdkdemo.utils.BmpUtils.argbConvertColor(bytes, 0xFF, 0x00, 0x00)
                         FileOutputStream(currentFile).use { fos ->
-                            //val header = bytes!!.sliceArray(0..3)
-                            //newBytes[0] = 0x05
                             fos.write(newBytes)
                             fos.flush()
                         }
                     }
-
                 }
             }
 
             changeMtu {
                 try {
-
                     if (filePaths.isNotEmpty()) {
                         sendFileV2(0, filePaths)
                     }
-
-
                 } catch (e: FileNotFoundException) {
-                    bleMessage.value = "服务器错误"
+                    bleMessage.value = "Server error"
                     e.printStackTrace()
                 }
             }
@@ -2690,7 +2542,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 var jsonBytes = byteArrayOf()
                 fun getFileRefresh(index: Int, len: Int) {
                     if (index > len) {
-                        println("开始读取手表本地md5")
+                        println("Start reading the watch's local MD5")
                         for (i in 0 until jsonBytes.size step 64) {
                             val localName =
                                 jsonBytes.sliceArray(i until i + 32).filter { it != 0x00.toByte() }
@@ -2779,12 +2631,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 val currentFile = File(it)
                 val relativePath =
                     currentFile.relativeTo(destinationDir).path.replace(File.separator, "/")
-                val md5Str =
-                    if (jsonMap[currentFile.name] != null) jsonMap[currentFile.name] else ""
-                val deviceLocalMd5Str =
-                    if (deviceLocalJsonMap[currentFile.name] != null) deviceLocalJsonMap[currentFile.name] else ""
-                println("网络:${md5Str}")
-                println("手表本地:${deviceLocalMd5Str}")
+                val md5Str = jsonMap[currentFile.name] ?: ""
+                val deviceLocalMd5Str = deviceLocalJsonMap[currentFile.name] ?: ""
+                println("Network: $md5Str")
+                println("Watch local: $deviceLocalMd5Str")
                 mapOf(
                     "relative_path" to relativePath,
                     "md5" to md5Str,
@@ -2803,7 +2653,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     sendFileV2(0, filePaths)
                 }
             } catch (e: FileNotFoundException) {
-                bleMessage.value = "服务器错误"
+                bleMessage.value = "Server error"
                 e.printStackTrace()
             }
         }
@@ -2825,65 +2675,52 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         if (index < filePaths.size - 1) {
                             sendFileV2(index + 1, filePaths)
                         } else {
-                            val data = StarmaxSend()
-                                .sendTotalFileComplete()
-                            //p(data)
+                            val data = StarmaxSend().sendTotalFileComplete()
                             sendMsg(data)
                         }
                     }
 
-                    override fun onTotalSuccess() {
-
-                    }
+                    override fun onTotalSuccess() {}
 
                     override fun onProgress(progress: Double) {
                         bleMessage.value =
-                            "文件:${currentInfo["relative_path"]},当前进度:${progress.toInt()}%,md5:${currentInfo["md5"] as String}"
+                            "File: ${currentInfo["relative_path"]}, Progress: ${progress.toInt()}%, md5: ${currentInfo["md5"] as String}"
                     }
 
                     override fun onFailure(status: Int) {
-                        bleMessage.value = "发送失败"
+                        bleMessage.value = "Send failed"
                     }
 
-                    override fun onCheckSum() {
-
-                    }
+                    override fun onCheckSum() {}
 
                     override fun onSendComplete() {
-                        val data = StarmaxSend()
-                            .sendSingleFileComplete()
-                        //p(data)
+                        val data = StarmaxSend().sendSingleFileComplete()
                         sendMsg(data)
-
                     }
 
                     override fun onStart() {
-                        val data = StarmaxSend()
-                            .sendFileV2Header(
-                                currentInfo["md5"] as String,
-                                filePaths.size,
-                                index,
-                                BleFileSender.allFileData.size,
-                                currentInfo["relative_path"] as String
-                            )
-                        //p(data)
+                        val data = StarmaxSend().sendFileV2Header(
+                            currentInfo["md5"] as String,
+                            filePaths.size,
+                            index,
+                            BleFileSender.allFileData.size,
+                            currentInfo["relative_path"] as String
+                        )
                         sendMsg(data)
                     }
 
                     override fun onSend() {
                         if (BleFileSender.hasNext()) {
                             val data = StarmaxSend().sendFileV2Content()
-
                             sendMsg(data)
                         }
                     }
                 })
 
             BleFileSender.sliceBuffer = 8
-
             BleFileSender.onStart()
         } catch (e: FileNotFoundException) {
-            bleMessage.value = "服务器错误"
+            bleMessage.value = "Server error"
             e.printStackTrace()
         }
     }
@@ -2893,7 +2730,6 @@ class BleViewModel() : ViewModel(), KoinComponent {
         changeMtu {
             try {
                 val bin = context.contentResolver.openInputStream(binUri!!) as FileInputStream?
-                var lastSendCalendar = Calendar.getInstance()
                 BleFileSender.initFile(
                     bin,
                     object : BleFileSenderListener() {
@@ -2901,44 +2737,36 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         override fun onTotalSuccess() {}
 
                         override fun onProgress(progress: Double) {
-                            bleMessage.value = "当前进度${progress.toInt()}%"
+                            bleMessage.value = "Progress: ${progress.toInt()}%"
                         }
 
                         override fun onFailure(status: Int) {}
 
-                        override fun onCheckSum() {
+                        override fun onCheckSum() {}
 
-                        }
-
-                        override fun onSendComplete() {
-
-                        }
+                        override fun onSendComplete() {}
 
                         override fun onStart() {
-                            val data = StarmaxSend()
-                                .sendDial(
-                                    5001,
-                                    BmpUtils.bmp24to16(255, 255, 255),
-                                    1
-                                )
-                            //p(data)
+                            val data = StarmaxSend().sendDial(
+                                5001,
+                                BmpUtils.bmp24to16(255, 255, 255),
+                                1
+                            )
                             sendMsg(data)
                         }
 
                         override fun onSend() {
                             if (BleFileSender.hasNext()) {
                                 val data = StarmaxSend().sendFile()
-
                                 sendMsg(data)
                             }
                         }
                     })
 
                 BleFileSender.sliceBuffer = 8
-
                 BleFileSender.onStart()
             } catch (e: FileNotFoundException) {
-                bleMessage.value = "服务器错误"
+                bleMessage.value = "Server error"
                 e.printStackTrace()
             }
         }
@@ -2948,16 +2776,15 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         object : Thread() {
             override fun run() {
-
-                val client = OkHttpClient();
+                val client = OkHttpClient()
                 val request = Request.Builder()
                     .url("https://www.runmefit.cn/api/firmware/unit_test")
-                    .build();
+                    .build()
 
                 try {
-                    val response = client.newCall(request).execute();
+                    val response = client.newCall(request).execute()
                     if (response.isSuccessful) {
-                        val responseBody = response.body?.string();
+                        val responseBody = response.body?.string()
                         println(responseBody)
                         if (responseBody != null) {
                             val array = JSONArray(responseBody)
@@ -2969,21 +2796,18 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                 StarmaxBleClient.instance.deviceUnitTest(name, value, status)
                                     .subscribe({
                                         bleResponseLabel.value =
-                                            "单元测试:${name},值:${value},状态${status}"
+                                            "Unit test: ${name}, Value: ${value}, Status: ${status}"
                                     }, {}).let {
                                         sendDisposable.add(it)
                                     }
                             }
                         }
-                    } else {
-                        // 处理错误情况
                     }
                 } catch (e: IOException) {
-                    e.printStackTrace();
+                    e.printStackTrace()
                 }
             }
         }.start()
-
     }
 
     fun sendLogoLocal(context: Context) {
@@ -2998,39 +2822,32 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         override fun onTotalSuccess() {}
 
                         override fun onProgress(progress: Double) {
-                            bleMessage.value = "当前进度${progress.toInt()}%"
+                            bleMessage.value = "Progress: ${progress.toInt()}%"
                         }
 
                         override fun onFailure(status: Int) {}
 
-                        override fun onCheckSum() {
+                        override fun onCheckSum() {}
 
-                        }
-
-                        override fun onSendComplete() {
-
-                        }
+                        override fun onSendComplete() {}
 
                         override fun onStart() {
-                            val data = StarmaxSend()
-                                .sendLogo()
+                            val data = StarmaxSend().sendLogo()
                             sendMsg(data)
                         }
 
                         override fun onSend() {
                             if (BleFileSender.hasNext()) {
                                 val data = StarmaxSend().sendFile()
-
                                 sendMsg(data)
                             }
                         }
                     })
 
                 BleFileSender.sliceBuffer = 8
-
                 BleFileSender.onStart()
             } catch (e: FileNotFoundException) {
-                bleMessage.value = "服务器错误"
+                bleMessage.value = "Server error"
                 e.printStackTrace()
             }
         }
@@ -3048,18 +2865,14 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         override fun onTotalSuccess() {}
 
                         override fun onProgress(progress: Double) {
-                            bleMessage.value = "当前进度${progress.toInt()}%"
+                            bleMessage.value = "Progress: ${progress.toInt()}%"
                         }
 
                         override fun onFailure(status: Int) {}
 
-                        override fun onCheckSum() {
+                        override fun onCheckSum() {}
 
-                        }
-
-                        override fun onSendComplete() {
-
-                        }
+                        override fun onSendComplete() {}
 
                         override fun onStart() {
                             val data = StarmaxSend().sendMp3WithEventReminder(otherInfo)
@@ -3069,17 +2882,15 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         override fun onSend() {
                             if (BleFileSender.hasNext()) {
                                 val data = StarmaxSend().sendFile()
-
                                 sendMsg(data)
                             }
                         }
                     })
 
                 BleFileSender.sliceBuffer = 8
-
                 BleFileSender.onStart()
             } catch (e: FileNotFoundException) {
-                bleMessage.value = "服务器错误"
+                bleMessage.value = "Server error"
                 e.printStackTrace()
             }
         }
@@ -3111,8 +2922,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                         override fun onTotalSuccess() {}
 
                                         override fun onProgress(progress: Double) {
-                                            bleMessage.value =
-                                                "当前进度${progress}%"
+                                            bleMessage.value = "Current progress ${progress}%"
                                         }
 
                                         override fun onFailure(status: Int) {}
@@ -3142,13 +2952,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
                                 BleFileSender.onStart()
                             } catch (e: FileNotFoundException) {
-                                bleMessage.value = "文件未找到"
+                                bleMessage.value = "\n" + "file not found"
                                 e.printStackTrace()
                             }
                         }
                     }
                 } catch (e: java.lang.Exception) {
-                    bleMessage.value = "服务器错误"
+                    bleMessage.value = "Server error"
                     e.printStackTrace()
                 }
             }
@@ -3159,7 +2969,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.clearLogo().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "清除logo成功"
+                bleResponseLabel.value = "\n" + "Logo cleared successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -3206,9 +3016,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun sendGts7FirmwareLocal(context: Context) {
         initData()
-        if (binUri == null) {
-            return
-        }
+        if (binUri == null) return
 
         changeMtu {
             try {
@@ -3219,63 +3027,53 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     object : BleFileSenderListener() {
                         override fun onSuccess() {
                             val currentCalendar = Calendar.getInstance()
-                            // 计算时间差异（以秒为单位）
-                            // 计算时间差异（以秒为单位）
                             val diffInSeconds: Long =
-                                (currentCalendar.getTimeInMillis() - lastSendCalendar.getTimeInMillis()) / 1000
-                            bleMessage.value = "发送完成,耗时${diffInSeconds}"
+                                (currentCalendar.timeInMillis - lastSendCalendar.timeInMillis) / 1000
+                            bleMessage.value = "Send completed, time elapsed: ${diffInSeconds}s"
                         }
 
-                        override fun onTotalSuccess() {
-                        }
+                        override fun onTotalSuccess() {}
 
                         override fun onProgress(progress: Double) {
                             val currentCalendar = Calendar.getInstance()
-                            // 计算时间差异（以秒为单位）
-                            // 计算时间差异（以秒为单位）
                             val diffInSeconds: Long =
-                                (currentCalendar.getTimeInMillis() - lastSendCalendar.getTimeInMillis()) / 1000
-
-                            bleMessage.value = "当前进度${progress.toInt()}%,耗时${diffInSeconds}"
-
+                                (currentCalendar.timeInMillis - lastSendCalendar.timeInMillis) / 1000
+                            bleMessage.value = "Progress: ${progress.toInt()}%, Time elapsed: ${diffInSeconds}s"
                         }
 
                         override fun onFailure(status: Int) {
-                            bleMessage.value = "发送失败"
+                            bleMessage.value = "Send failed"
                         }
 
                         override fun onCheckSum() {
                             val data = StarmaxSend().sendDiffCheckSum()
                             Log.d("Diff Sender", "${BleFileSender.checksumData.size}")
-                            bleMessage.value =
-                                "正在发送第${BleFileSender.checksumSendIndex}包校验码"
+                            bleMessage.value = "Sending checksum packet ${BleFileSender.checksumSendIndex}"
                             sendMsg(data)
                         }
 
                         override fun onStart() {
                             val data = StarmaxSend().sendDiffHeader()
-                            bleMessage.value = "发送文件头"
+                            bleMessage.value = "Sending file header"
                             sendMsg(data)
                         }
 
                         override fun onSendComplete() {
                             val data = StarmaxSend().sendDiffComplete()
-                            bleMessage.value = "发送结束通知固件"
+                            bleMessage.value = "Send complete notification to firmware"
                             sendMsg(data)
                         }
 
                         override fun onSend() {
                             val data = StarmaxSend().sendDiffFile()
-                            //bleMessage.value = "正在发送，当前偏移"+BleFileSender.checksumIndex+"/"+BleFileSender.checksumInfo.size
                             sendMsg(data)
                         }
                     })
 
                 BleFileSender.sliceBuffer = 8
-
                 BleFileSender.onStart()
             } catch (e: FileNotFoundException) {
-                bleMessage.value = "服务器错误"
+                bleMessage.value = "Server error"
                 e.printStackTrace()
             }
         }
@@ -3283,9 +3081,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun sendGts7CrcLocal(context: Context) {
         initData()
-        if (binUri == null) {
-            return
-        }
+        if (binUri == null) return
 
         try {
             val bin = context.contentResolver.openInputStream(binUri!!) as FileInputStream?
@@ -3295,37 +3091,30 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 object : BleFileSenderListener() {
                     override fun onSuccess() {
                         val currentCalendar = Calendar.getInstance()
-                        // 计算时间差异（以秒为单位）
-                        // 计算时间差异（以秒为单位）
                         val diffInSeconds: Long =
-                            (currentCalendar.getTimeInMillis() - lastSendCalendar.getTimeInMillis()) / 1000
-                        bleMessage.value = "发送完成,耗时${diffInSeconds}"
+                            (currentCalendar.timeInMillis - lastSendCalendar.timeInMillis) / 1000
+                        bleMessage.value = "Send completed, time elapsed: ${diffInSeconds}s"
                     }
 
-                    override fun onTotalSuccess() {
-                    }
+                    override fun onTotalSuccess() {}
 
                     override fun onProgress(progress: Double) {
                         val currentCalendar = Calendar.getInstance()
-                        // 计算时间差异（以秒为单位）
-                        // 计算时间差异（以秒为单位）
                         val diffInSeconds: Long =
-                            (currentCalendar.getTimeInMillis() - lastSendCalendar.getTimeInMillis()) / 1000
-
-                        bleMessage.value = "当前进度${progress.toInt()}%,耗时${diffInSeconds}"
-
+                            (currentCalendar.timeInMillis - lastSendCalendar.timeInMillis) / 1000
+                        bleMessage.value = "Progress: ${progress.toInt()}%, Time elapsed: ${diffInSeconds}s"
                     }
 
                     override fun onFailure(status: Int) {
-                        bleMessage.value = "发送失败"
+                        bleMessage.value = "Send failed"
                     }
 
                     override fun onCheckSum() {
                         val data = StarmaxSend().sendDiffCheckSum()
-                        Log.d("Diff Sender", "正在发送第${BleFileSender.checksumSendIndex}包")
-                        Log.d("Diff Sender", "checksum 大小:${BleFileSender.checksumData.size}")
-                        bleMessage.value = "正在发送第${BleFileSender.checksumSendIndex}包校验码"
-                        Log.d("Diff Sender", "data 大小:${data.size}")
+                        Log.d("Diff Sender", "Sending checksum packet ${BleFileSender.checksumSendIndex}")
+                        Log.d("Diff Sender", "Checksum size: ${BleFileSender.checksumData.size}")
+                        bleMessage.value = "Sending checksum packet ${BleFileSender.checksumSendIndex}"
+                        Log.d("Diff Sender", "Data size: ${data.size}")
                         Utils.p(data)
                         StarmaxBleClient.instance.notify(
                             StarmaxSendRequest(
@@ -3337,9 +3126,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
                     override fun onStart() {
                         val data = StarmaxSend().sendDiffHeader()
-                        bleMessage.value = "发送文件头"
+                        bleMessage.value = "Sending file header"
                         Utils.p(data)
-
                         StarmaxBleClient.instance.notify(
                             StarmaxSendRequest(
                                 0xF3,
@@ -3350,8 +3138,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
                     override fun onSendComplete() {
                         val data = StarmaxSend().sendDiffComplete()
-                        bleMessage.value = "发送结束通知固件"
-
+                        bleMessage.value = "Send complete notification to firmware"
                         Utils.p(data)
                     }
 
@@ -3362,29 +3149,21 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 })
 
             BleFileSender.sliceBuffer = 8
-
             BleFileSender.onStart()
         } catch (e: FileNotFoundException) {
-            bleMessage.value = "服务器错误"
+            bleMessage.value = "Server error"
             e.printStackTrace()
         }
     }
 
     fun sendCustomDial(context: Context) {
         initData()
-        if (binUri == null) {
-            return
-        }
-
-        if (imageUri == null) {
-            return
-        }
+        if (binUri == null || imageUri == null) return
 
         changeMtu {
             try {
                 val bin = context.contentResolver.openInputStream(binUri!!) as FileInputStream?
-                val img =
-                    context.contentResolver.openInputStream(imageUri!!) as FileInputStream?
+                val img = context.contentResolver.openInputStream(imageUri!!) as FileInputStream?
 
                 var lastSendCalendar = Calendar.getInstance()
                 BleFileSender.initFileWithBackground(
@@ -3393,74 +3172,53 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     img,
                     object : BleFileSenderListener() {
                         override fun onSuccess() {}
-                        override fun onTotalSuccess() {
-                        }
+                        override fun onTotalSuccess() {}
 
                         override fun onProgress(progress: Double) {
-                            bleMessage.value = "当前进度${progress.toInt()}%"
+                            bleMessage.value = "Progress: ${progress.toInt()}%"
                         }
 
                         override fun onFailure(status: Int) {}
+
                         override fun onStart() {
-                            val data = StarmaxSend()
-                                .sendDial(
-                                    5001,
-                                    BmpUtils.bmp24to16(255, 255, 255),
-                                    1
-                                )
+                            val data = StarmaxSend().sendDial(5001, BmpUtils.bmp24to16(255, 255, 255), 1)
                             Utils.p(data)
                             sendMsg(data)
                         }
 
-                        override fun onCheckSum() {
+                        override fun onCheckSum() {}
 
-                        }
-
-                        override fun onSendComplete() {
-
-                        }
+                        override fun onSendComplete() {}
 
                         override fun onSend() {
                             if (BleFileSender.hasNext()) {
                                 val data = StarmaxSend().sendFile()
-                                //p(data)
                                 BleManager.getInstance().write(
                                     bleDevice?.get(),
                                     WriteServiceUUID.toString(),
                                     WriteCharacteristicUUID.toString(),
                                     data,
                                     object : BleWriteCallback() {
-                                        override fun onWriteSuccess(
-                                            current: Int,
-                                            total: Int,
-                                            justWrite: ByteArray?
-                                        ) {
+                                        override fun onWriteSuccess(current: Int, total: Int, justWrite: ByteArray?) {
                                             if (current == total) {
                                                 val newSendCalendar = Calendar.getInstance()
-                                                val millis =
-                                                    newSendCalendar.timeInMillis - lastSendCalendar.timeInMillis
-                                                Log.e(
-                                                    "BleFileSender",
-                                                    "发送时间:${millis},当前rssi:"
-                                                )
+                                                val millis = newSendCalendar.timeInMillis - lastSendCalendar.timeInMillis
+                                                Log.e("BleFileSender", "Send time: ${millis}ms, current RSSI:")
                                                 lastSendCalendar = Calendar.getInstance()
                                             }
                                         }
 
-                                        override fun onWriteFailure(exception: BleException?) {
-                                            //bleMessage.value = "指令发送失败"
-                                        }
-                                    })
-
+                                        override fun onWriteFailure(exception: BleException?) {}
+                                    }
+                                )
                             }
                         }
                     })
 
                 BleFileSender.sliceBuffer = 8
-
                 BleFileSender.onStart()
             } catch (e: FileNotFoundException) {
-                bleMessage.value = "服务器错误"
+                bleMessage.value = "Server error"
                 e.printStackTrace()
             }
         }
@@ -3470,40 +3228,27 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getDialInfo().subscribe({
             var str = ""
-
             val dataList = it.infosList
-            for (i in 0 until dataList.size) {
-                val oneData = dataList[i]
+            for (oneData in dataList) {
                 val isSelected = oneData.isSelected
                 val dialId = oneData.dialId
                 val dialColor = oneData.dialColor
                 val align = oneData.align
-                if (isSelected == 1) {
-                    str += "已选择\n"
-                }
-                str += "表盘id:${dialId}\n"
-                str += "表盘颜色:${
-                    Utils.bytesToHex(
-                        Utils.int2byte(
-                            dialColor,
-                            3
-                        )
-                    )
-                }\n"
-                str += "位置:${align}\n"
+                if (isSelected == 1) str += "Selected\n"
+                str += "Dial ID: $dialId\n"
+                str += "Dial Color: ${Utils.bytesToHex(Utils.int2byte(dialColor, 3))}\n"
+                str += "Position: $align\n"
             }
-
             bleResponseLabel.value = str
-        }, {}).let {
-            sendDisposable.add(it)
-        }
+        }, {}).let { sendDisposable.add(it) }
     }
+
 
     fun switchDial() {
         initData()
         StarmaxBleClient.instance.switchDial(5001).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "切换表盘成功"
+                bleResponseLabel.value = "Dial switch successful"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -3515,7 +3260,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun unpair() {
         initData()
         StarmaxBleClient.instance.unpair(0).subscribe(
-            { bleResponseLabel.value = "解绑成功" },
+            { bleResponseLabel.value = "Unpair successful" },
             {}
         ).also { sendDisposable.add(it) }
     }
@@ -3523,7 +3268,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun unpairCheck() {
         initData()
         StarmaxBleClient.instance.unpair(1).subscribe({
-            bleResponseLabel.value = "解绑成功"
+            bleResponseLabel.value = "Unpair successful"
         }, {}).let {
             sendDisposable.add(it)
         }
@@ -3532,7 +3277,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun reset() {
         initData()
         StarmaxBleClient.instance.reset().subscribe({
-            bleResponseLabel.value = "恢复出厂成功"
+            bleResponseLabel.value = "Factory reset successful"
         }, {}).let {
             sendDisposable.add(it)
         }
@@ -3541,7 +3286,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun close() {
         initData()
         StarmaxBleClient.instance.close().subscribe({
-            bleResponseLabel.value = "关机成功"
+            bleResponseLabel.value = "Shutdown successful"
         }, {}).let {
             sendDisposable.add(it)
         }
@@ -3550,7 +3295,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun shippingMode() {
         initData()
         StarmaxBleClient.instance.shippingMode().subscribe({
-            bleResponseLabel.value = "进入船运模式"
+            bleResponseLabel.value = "Entered shipping mode"
         }, {}).let {
             sendDisposable.add(it)
         }
@@ -3560,12 +3305,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getNfcInfo().subscribe({
             if (it.status == 0) {
-                var str = ("类型:" + it.type)
+                var str = ("Type:" + it.type)
 
                 val cardsList = it.cardsList
                 for (i in 0 until cardsList.size) {
                     val oneData = cardsList[i]
-                    str += "卡片类型:" + oneData.cardType + ",卡片名称" + oneData.cardName + "%\n"
+                    str += "Card type:" + oneData.cardType + ", Card name:" + oneData.cardName + "%\n"
                 }
 
                 bleResponseLabel.value = str
@@ -3578,20 +3323,18 @@ class BleViewModel() : ViewModel(), KoinComponent {
     }
 
     /**
-     * @param data
+     * Send a BLE message
      */
     fun sendMsg(data: ByteArray?) {
         if (bleDevice == null || bleDevice!!.get() == null || !BleManager.getInstance()
                 .isConnected(bleDevice!!.get())
         ) {
-            sendDisposable.clear() //清空发送栈
+            sendDisposable.clear() // Clear sending queue
             viewModelScope.launch {
-                Toast.makeText(context, "蓝牙未连接", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Bluetooth not connected", Toast.LENGTH_SHORT).show()
             }
             return
         }
-//          Utils.p(data!!)
-//        Utils.p(data!!)
 
         BleManager.getInstance().write(
             bleDevice?.get(),
@@ -3600,12 +3343,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
             data,
             object : BleWriteCallback() {
                 override fun onWriteSuccess(current: Int, total: Int, justWrite: ByteArray?) {
-                    //bleMessage.value = "指令发送成功"
-                    //println("当前 $current 总共 $total 已写 $justWrite")
+                    // bleMessage.value = "Command sent successfully"
                 }
 
                 override fun onWriteFailure(exception: BleException?) {
-                    //bleMessage.value = "指令发送失败"
+                    // bleMessage.value = "Command sending failed"
                 }
             })
     }
@@ -3614,18 +3356,16 @@ class BleViewModel() : ViewModel(), KoinComponent {
         BleManager.getInstance().disconnectAllDevice()
     }
 
-
     fun changeMtu(onMtuChanged: () -> Unit) {
         BleManager.getInstance().setMtu(bleDevice?.get(), 512, object : BleMtuChangedCallback() {
             override fun onSetMTUFailure(exception: BleException) {
-                // 设置MTU失败
+                // Failed to set MTU
                 Log.e("BleViewModel", exception.description)
             }
 
             override fun onMtuChanged(mtu: Int) {
-
                 BleManager.getInstance().setSplitWriteNum(min(mtu - 3, 512))
-                Log.e("BleViewModel", "设置mtu${mtu}成功")
+                Log.e("BleViewModel", "MTU set to $mtu successfully")
                 onMtuChanged()
             }
         })
@@ -3633,36 +3373,37 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     private fun statusLabel(status: Int): String {
         return when (status) {
-            0 -> "命令正确"
-            1 -> "命令码错误"
-            2 -> "校验码错误"
-            3 -> "数据长度错误"
-            4 -> "数据无效"
-            else -> "数据无效"
+            0 -> "Command correct"
+            1 -> "Command code error"
+            2 -> "Checksum error"
+            3 -> "Data length error"
+            4 -> "Invalid data"
+            else -> "Invalid data"
         };
     }
 
     private fun sportModeLabel(mode: Int): String {
         return when (mode) {
-            0X00 -> "室内跑步"
-            0X01 -> "户外跑步"
-            0X03 -> "户外骑行"
-            0X04 -> "健走"
-            0X05 -> "跳绳"
-            0X06 -> "足球"
-            0X07 -> "羽毛球"
-            0X09 -> "篮球"
-            0X0A -> "椭圆机"
-            0X0B -> "徒步"
-            0X0C -> "瑜伽"
-            0X0D -> "力量训练"
-            0X0E -> "爬山"
-            0X0F -> "自由运动"
-            0X10 -> "户外步行"
-            0X12 -> "室内单车"
-            else -> "数据无效"
+            0X00 -> "Indoor running"
+            0X01 -> "Outdoor running"
+            0X03 -> "Outdoor cycling"
+            0X04 -> "Brisk walking"
+            0X05 -> "Jump rope"
+            0X06 -> "Football"
+            0X07 -> "Badminton"
+            0X09 -> "Basketball"
+            0X0A -> "Elliptical machine"
+            0X0B -> "Hiking"
+            0X0C -> "Yoga"
+            0X0D -> "Strength training"
+            0X0E -> "Mountaineering"
+            0X0F -> "Free exercise"
+            0X10 -> "Outdoor walking"
+            0X12 -> "Indoor cycling"
+            else -> "Invalid data"
         };
     }
+
 
     class BluetoothListenerReceiver(val bleViewModel: BleViewModel) : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -3671,29 +3412,29 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0)) {
                         BluetoothAdapter.STATE_TURNING_ON -> Log.e(
                             "BleReceiver",
-                            "onReceive---------蓝牙正在打开中"
+                            "onReceive---------Bluetooth is turning on"
                         )
 
                         BluetoothAdapter.STATE_ON -> {
-                            Log.e("BleReceiver", "onReceive---------蓝牙已经打开")
-//                            Handler(Looper.getMainLooper()).postDelayed({
-//                                BleManager.getInstance().connect(
-//                                    bleViewModel.bleDevice?.get()?.mac,
-//                                    bleViewModel.bleGattCallback
-//                                )
-//                            }, 1000)
-
+                            Log.e("BleReceiver", "onReceive---------Bluetooth is turned on")
+                            // Optionally, you can reconnect to the device here
+                            // Handler(Looper.getMainLooper()).postDelayed({
+                            //     BleManager.getInstance().connect(
+                            //         bleViewModel.bleDevice?.get()?.mac,
+                            //         bleViewModel.bleGattCallback
+                            //     )
+                            // }, 1000)
                         }
 
                         BluetoothAdapter.STATE_TURNING_OFF -> {
                             Log.e(
                                 "BleReceiver",
-                                "onReceive---------蓝牙正在关闭中"
+                                "onReceive---------Bluetooth is turning off"
                             )
                         }
 
                         BluetoothAdapter.STATE_OFF -> {
-                            Log.e("BleReceiver", "onReceive---------蓝牙已经关闭")
+                            Log.e("BleReceiver", "onReceive---------Bluetooth is turned off")
                             bleViewModel.bleState = BleState.DISCONNECTED
                             BleManager.getInstance().destroy()
                         }
@@ -3712,14 +3453,15 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun bindDevice(): MutableMap<String, Any> {
         val bluetoothDevice = bleDevice!!.get()!!.device
 
-        Log.e("BleViewModel", "绑定设备类型" + bluetoothDevice.type.toString())
+        Log.e("BleViewModel", "Device type: " + bluetoothDevice.type.toString())
         val label = when (bluetoothDevice.type) {
-            1 -> "经典蓝牙"
-            2 -> "LE蓝牙"
-            3 -> "双模蓝牙"
-            else -> "未知蓝牙"
+            1 -> "Classic Bluetooth"
+            2 -> "LE Bluetooth"
+            3 -> "Dual-mode Bluetooth"
+            else -> "Unknown Bluetooth"
         }
         Toast.makeText(context, label, Toast.LENGTH_SHORT).show()
+
         var result = false
         val data: MutableMap<String, Any> = HashMap()
         if (ActivityCompat.checkSelfPermission(
@@ -3727,12 +3469,14 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 Manifest.permission.BLUETOOTH_CONNECT
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            if ((bluetoothDevice.type == BluetoothDevice.DEVICE_TYPE_DUAL || bluetoothDevice.type == BluetoothDevice.DEVICE_TYPE_CLASSIC) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if ((bluetoothDevice.type == BluetoothDevice.DEVICE_TYPE_DUAL || bluetoothDevice.type == BluetoothDevice.DEVICE_TYPE_CLASSIC)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+            ) {
                 result = createBind(bluetoothDevice, BluetoothDevice.TRANSPORT_BREDR)
-                Log.e("BleViewModel", "双模蓝牙绑定" + if (result) "成功" else "失败")
+                Log.e("BleViewModel", "Dual-mode Bluetooth bind " + if (result) "successful" else "failed")
             } else if (bluetoothDevice.type == BluetoothDevice.DEVICE_TYPE_LE) {
                 result = createBind(bluetoothDevice)
-                Log.e("BleViewModel", "经典蓝牙绑定" + if (result) "成功" else "失败")
+                Log.e("BleViewModel", "Classic Bluetooth bind " + if (result) "successful" else "failed")
             }
         }
 
@@ -3757,7 +3501,6 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 var6.printStackTrace()
             }
         }
-
         return bRet
     }
 
@@ -3765,7 +3508,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         if (device == null) return false
         var bRet = false
         try {
-            Log.e("BleViewModel", "进入双模蓝牙绑定")
+            Log.e("BleViewModel", "Binding Dual-mode Bluetooth")
             val bluetoothDeviceClass = device.javaClass
             val createBondMethod =
                 bluetoothDeviceClass.getDeclaredMethod("createBond", transport.javaClass)
@@ -3778,6 +3521,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }
         return bRet
     }
+
 
     fun initData() {
         bleResponseLabel.value = "";

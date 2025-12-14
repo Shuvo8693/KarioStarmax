@@ -19,11 +19,11 @@ class Real(val otaViewModel: OtaViewModel) {
             super.onStateChanged(state)
             println(state)
             if (state == DfuAdapter.STATE_INIT_OK) {
-                otaViewModel.otaMessage.postValue("DfuAdapter初始化成功")
+                otaViewModel.otaMessage.postValue("DfuAdapter initialization successful") // DfuAdapter初始化成功 -> DfuAdapter initialization successful
             }else if(state == DfuAdapter.STATE_PREPARED){
                 val otaDeviceInfo = mDfuAdapter.get()!!.otaDeviceInfo
                 otaViewModel.otaMessage.postValue(
-                    "DfuAdapter升级准备\n$otaDeviceInfo"
+                    "DfuAdapter upgrade ready\n$otaDeviceInfo" // DfuAdapter升级准备 -> DfuAdapter upgrade ready
                 )
 
                 val mDfuConfig = DfuConfig()
@@ -37,11 +37,11 @@ class Real(val otaViewModel: OtaViewModel) {
                 mDfuAdapter.get()!!.startOtaProcedure(mDfuConfig)
 
             }else if(state == DfuAdapter.STATE_DISCONNECTED){
-                otaViewModel.otaMessage.postValue("DfuAdapter断开连接")
+                otaViewModel.otaMessage.postValue("DfuAdapter disconnected") // DfuAdapter断开连接 -> DfuAdapter disconnected
             }else if(state == DfuAdapter.STATE_CONNECT_FAILED){
-                otaViewModel.otaMessage.postValue("DfuAdapter连接失败")
+                otaViewModel.otaMessage.postValue("DfuAdapter connection failed") // DfuAdapter连接失败 -> DfuAdapter connection failed
             }else{
-                otaViewModel.otaMessage.postValue("未知状态")
+                otaViewModel.otaMessage.postValue("Unknown state") // 未知状态 -> Unknown state
             }
         }
 
@@ -62,12 +62,12 @@ class Real(val otaViewModel: OtaViewModel) {
         override fun onProgressChanged(dfuProgressInfo: DfuProgressInfo?) {
             println(dfuProgressInfo)
             super.onProgressChanged(dfuProgressInfo)
-            otaViewModel.otaMessage.postValue("当前进度：${dfuProgressInfo!!.progress}/100")
+            otaViewModel.otaMessage.postValue("Current progress：${dfuProgressInfo!!.progress}/100") // 当前进度： -> Current progress：
         }
 
         override fun onError(type: Int, code: Int) {
             println(code)
-            otaViewModel.otaMessage.postValue("发生错误：type.${type},code.${code}")
+            otaViewModel.otaMessage.postValue("Error occurred：type.${type},code.${code}") // 发生错误： -> Error occurred：
         }
     }
 
