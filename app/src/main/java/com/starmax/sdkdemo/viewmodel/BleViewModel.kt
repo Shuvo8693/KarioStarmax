@@ -239,7 +239,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
             Handler(Looper.getMainLooper()).postDelayed({
                 if (tryOpenNotify.value) {
-                    openNotify(bleDevice!!.get())   // todo:  get bleDevice info
+                    openNotify(bleDevice!!.get())   // todo:  get bleDevice info on connect success through ghatt
                 } else {
                     openIndicate(bleDevice!!.get())
                 }
@@ -299,7 +299,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun connect(newBleDevice: BleDevice?) {
         bleDevice = SoftReference(newBleDevice)
         if (bleDevice != null) {
-            BleManager.getInstance().connect(bleDevice!!.get(), bleGattCallback)
+            BleManager.getInstance().connect(bleDevice!!.get(), bleGattCallback) // todo: Get ble device info then connect with bleGattCallback
         }
     }
 
@@ -341,7 +341,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     }
 
     fun openNotify(newBleDevice: BleDevice?) {
-        BleManager.getInstance().notify(
+        BleManager.getInstance().notify( // ============== open ble notify (data is received from ble notify)
             newBleDevice,
             NotifyServiceUUID.toString(),
             NotifyCharacteristicUUID.toString(),

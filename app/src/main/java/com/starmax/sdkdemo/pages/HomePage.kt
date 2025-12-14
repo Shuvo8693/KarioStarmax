@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -77,12 +78,15 @@ import com.starmax.sdkdemo.dialogs.SportSyncToDeviceDialog
 import com.starmax.sdkdemo.dialogs.VolumeDialog
 import com.starmax.sdkdemo.dialogs.WorldClockDialog
 import com.starmax.sdkdemo.ui.theme.AppTheme
+import com.starmax.sdkdemo.viewmodel.BleState
 import com.starmax.sdkdemo.viewmodel.BleViewModel
 import com.starmax.sdkdemo.viewmodel.HomeViewModel
 import com.starmax.sdkdemo.viewmodel.OtaViewModel
 import com.starmax.sdkdemo.viewmodel.SetNetModel
 import kotlinx.coroutines.launch
+import okhttp3.internal.notify
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.component.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,6 +106,7 @@ fun HomePage(navController: NavController) {
             }
         }
     }
+
 
     AppTheme {
         if (viewModel.openNetDialog) {
@@ -200,8 +205,6 @@ fun HomePage(navController: NavController) {
         if(viewModel.openBloodPressureCalibrationDialog){
             BloodPressureCalibrationDialog()
         }
-
-
         Scaffold(
             snackbarHost = {
                 SnackbarHost(
@@ -251,6 +254,9 @@ fun HomePage(navController: NavController) {
 
                     // ================= CONNECTION CARD =================
                     item {
+
+//                         val bleState = bleViewModel.bleStateLiveData.value
+//                        val isConnected = bleState == BleState.CONNECTED
                         val bleDevice = bleViewModel.bleDevice
                         val isConnected = bleDevice?.get() != null
 
@@ -279,10 +285,8 @@ fun HomePage(navController: NavController) {
                                     ) {
 
                                         Text(
-                                            text = if (isConnected)
-                                                bleViewModel.getDeviceName()
-                                            else
-                                                "Not Connected",
+                                            text = if (isConnected) bleViewModel.getDeviceName()
+                                            else "Not Connected",
                                             style = MaterialTheme.typography.titleMedium
                                         )
 
@@ -298,7 +302,9 @@ fun HomePage(navController: NavController) {
                                 }
 
                                 if (isConnected) {
-                                    TextButton(onClick = { bleViewModel.disconnect() }) {
+                                    TextButton(onClick = {
+                                        bleViewModel.disconnect()
+                                    }) {
                                         Text("Disconnect")
                                     }
                                 }
