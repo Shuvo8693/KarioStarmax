@@ -35,13 +35,9 @@ class ScanViewModel() : ViewModel() {
     fun startScan() {
         val newDevices : MutableList<BleDevice> = mutableListOf()
         isScanning = true
-        BleManager.getInstance().initScanRule(BleScanRuleConfig.Builder()
-            .setScanTimeOut(10000)
-            .build())
+        BleManager.getInstance().initScanRule(BleScanRuleConfig.Builder().setScanTimeOut(10000).build())
         BleManager.getInstance().scan(object :BleScanCallback(){
-            override fun onScanStarted(success: Boolean) {
-
-            }
+            override fun onScanStarted(success: Boolean) {}
 
             override fun onScanning(bleDevice: BleDevice?) {
                 if(bleDevice != null && bleDevice.rssi >= -120 && bleDevice.name?.contains(searchName) == true && bleDevice.mac?.contains(searchMac) == true && devices.size <= 100){
@@ -75,9 +71,7 @@ class ScanViewModel() : ViewModel() {
                                         0xAA.toByte(), 0xEE.toByte()
                                     ))){
                                     broadcast[bleDevice.mac] = getFF0002AAEEStr(rawData)
-                                } else if(rawData.slice(2 .. 3).toByteArray().contentEquals(byteArrayOf(
-                                        0xBB.toByte(), 0xEE.toByte()
-                                    ))){
+                                } else if(rawData.slice(2 .. 3).toByteArray().contentEquals(byteArrayOf(0xBB.toByte(), 0xEE.toByte()))){
                                     broadcast[bleDevice.mac] = getFF0002BBEEStr(rawData)
                                 } else if(rawData.slice(2 .. 3).toByteArray().contentEquals(byteArrayOf(
                                         0xAA.toByte(), 0x55.toByte()

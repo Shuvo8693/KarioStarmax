@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -185,6 +186,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     var packageId = 0
 
+    @SuppressLint("StaticFieldLeak")
     private var bleService: RxBleService? = null
 
     private val serviceConnection: ServiceConnection = object : ServiceConnection {
@@ -239,7 +241,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
             Handler(Looper.getMainLooper()).postDelayed({
                 if (tryOpenNotify.value) {
-                    openNotify(bleDevice!!.get())   // todo:  get bleDevice info on connect success through ghatt
+                    openNotify(bleDevice!!.get())   //<<<< todo:  get bleDevice info on connect success through ghatt
                 } else {
                     openIndicate(bleDevice!!.get())
                 }
@@ -268,7 +270,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
     init {
         initPath()
         // Bluetooth on/off broadcast listener
-        context.registerReceiver(BluetoothListenerReceiver(this), makeFilter())
+        ContextCompat.registerReceiver(
+            context,
+            BluetoothListenerReceiver(this),
+            makeFilter(),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         StarmaxBleClient.instance.setWrite { byteArray -> sendMsg(byteArray) }
     }
 
@@ -334,7 +341,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 @SuppressLint("MissingPermission", "NewApi")
                 override fun onCharacteristicChanged(data: ByteArray) {
                     // Data received from BLE notify
-                    StarmaxBleClient.instance.notify(data) //todo ===== here byte data is received from Ble notify
+                    StarmaxBleClient.instance.notify(data) //todo <<<===== here byte data is received from Ble notify
                 }
             }
         )
@@ -366,7 +373,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 @SuppressLint("MissingPermission", "NewApi")
                 override fun onCharacteristicChanged(data: ByteArray) {
                     // Data received from BLE notify
-                    println(StarmaxBleClient.instance.notify(data))  //todo ===== here byte data is received from Ble notify
+                    println(StarmaxBleClient.instance.notify(data))  // todo ===== here byte data is received from Ble notify
                 }
             }
         )
