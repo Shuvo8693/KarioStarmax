@@ -3,17 +3,11 @@ package com.starmax.sdkdemo.pages
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.sharp.KeyboardArrowLeft
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -51,35 +45,37 @@ fun Gts10HealthIntervalPageView(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
-                        Text(text = "GTS10测量间隔")
+                        Text(text = "GTS10 Measurement Interval")
                     },
                     navigationIcon = {
                         IconButton(onClick = {
                             navController.popBackStack()
                         }) {
-                            Icon(Icons.Sharp.KeyboardArrowLeft, contentDescription = "返回")
+                            Icon(
+                                Icons.Sharp.KeyboardArrowLeft,
+                                contentDescription = "Back"
+                            )
                         }
                     },
                 )
             }
         ) { innerPadding ->
-            LazyColumn(
-                contentPadding = innerPadding
-            ) {
+            LazyColumn(contentPadding = innerPadding) {
                 items(count = viewModel.intervals.size) { index ->
                     val task = viewModel.intervals[index]
-
 
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(15.dp)
                     ) {
-                        SelectIntervalType(task = task,viewModel=viewModel)
+                        SelectIntervalType(task = task, viewModel = viewModel)
+
                         Text(
-                            text = "测量间隔:${task.measureInterval}",
+                            text = "Measurement Interval: ${task.measureInterval}",
                             style = MaterialTheme.typography.labelSmall
                         )
+
                         Slider(
                             value = task.measureInterval.toFloat(),
                             valueRange = 0f..255f,
@@ -87,11 +83,14 @@ fun Gts10HealthIntervalPageView(
                             onValueChange = {
                                 viewModel.intervals[index].setMeasureInterval(it.toInt())
                                 viewModel.refresh()
-                            })
+                            }
+                        )
+
                         Text(
-                            text = "存储间隔:${task.storeInterval}",
+                            text = "Storage Interval: ${task.storeInterval}",
                             style = MaterialTheme.typography.labelSmall
                         )
+
                         Slider(
                             value = task.storeInterval.toFloat(),
                             valueRange = 0f..255f,
@@ -99,7 +98,9 @@ fun Gts10HealthIntervalPageView(
                             onValueChange = {
                                 viewModel.intervals[index].setStoreInterval(it.toInt())
                                 viewModel.refresh()
-                            })
+                            }
+                        )
+
                         IconButton(onClick = {
                             viewModel.removeInterval(index)
                         }) {
@@ -107,6 +108,7 @@ fun Gts10HealthIntervalPageView(
                         }
                     }
                 }
+
                 item {
                     Row(
                         modifier = Modifier
@@ -121,6 +123,7 @@ fun Gts10HealthIntervalPageView(
                         }
                     }
                 }
+
                 item {
                     Row(
                         modifier = Modifier
@@ -131,48 +134,58 @@ fun Gts10HealthIntervalPageView(
                         OutlinedButton(onClick = {
                             navController.popBackStack()
                         }) {
-                            Text(text = "取消")
+                            Text(text = "Cancel")
                         }
+
                         ElevatedButton(
                             onClick = {
                                 viewModel.setData()
                                 navController.popBackStack()
-                            }, colors = ButtonDefaults.elevatedButtonColors(
+                            },
+                            colors = ButtonDefaults.elevatedButtonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             modifier = Modifier.offset(15.dp)
                         ) {
-                            Text(text = "确定")
+                            Text(text = "Confirm")
                         }
                     }
                 }
-
             }
         }
     }
 }
 
 @Composable
-fun SelectIntervalType(task: Notify.HealthInterval.Builder,viewModel: Gts10HealthIntervalViewModel){
-    var expanded by remember { mutableStateOf(false)}
+fun SelectIntervalType(
+    task: Notify.HealthInterval.Builder,
+    viewModel: Gts10HealthIntervalViewModel
+) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = "类型:${task.type.name}")
+        Text(text = "Type: ${task.type.name}")
+
         Box {
             TextButton(onClick = { expanded = !expanded }) {
-                Text(text = "选择",)
+                Text(text = "Select")
             }
+
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
                 HealthIntervalType.values()
-                    .filter { it != HealthIntervalType.Unknown && it != HealthIntervalType.UNRECOGNIZED }.forEach { option ->
+                    .filter {
+                        it != HealthIntervalType.Unknown &&
+                                it != HealthIntervalType.UNRECOGNIZED
+                    }
+                    .forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option.name) },
                             onClick = {
@@ -185,16 +198,13 @@ fun SelectIntervalType(task: Notify.HealthInterval.Builder,viewModel: Gts10Healt
             }
         }
     }
-
-
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewGts10HealthIntervalPageView() {
-    PreviewInit() {
+    PreviewInit {
         val navController = rememberNavController()
         Gts10HealthIntervalPage(navController)
     }
-
 }

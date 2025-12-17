@@ -172,6 +172,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         private set
     var bleResponseLabel = mutableStateOf("")
         private set
+    var bleHealthResponseLabel = mutableStateOf<Map<String, Any>>(emptyMap())
 
     val context: Context by inject()
 
@@ -373,7 +374,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 @SuppressLint("MissingPermission", "NewApi")
                 override fun onCharacteristicChanged(data: ByteArray) {
                     // Data received from BLE notify
-                    println(StarmaxBleClient.instance.notify(data))  // todo ===== here byte data is received from Ble notify
+                    println(StarmaxBleClient.instance.notify(data))  //todo ===== here byte data is received from Ble notify
                 }
             }
         )
@@ -441,9 +442,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                     localBasePath,
                                     it.byteArray.drop(7).map {
                                         String.format(
-                                            "0x%02X",
-                                            it
-                                        )
+                                            "0x%02X", it)
                                     }.chunked(40).joinToString(",\n") {
                                         it.joinToString(",")
                                     } + ",\n\n\n",
@@ -837,7 +836,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getHealthDetail().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = (
+              /*  bleResponseLabel.value = (
                         "Total step count:${it.totalSteps}\n"
                                 + "Total calories (Cal):${it.totalHeat}\n"
                                 + "Total distance (m):${it.totalDistance}\n"
@@ -855,7 +854,31 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                 + "Is worn:${it.isWear}\n"
                                 + "Respiration rate:${it.respirationRate}\n"
                                 + "Shake head:${it.shakeHead}"
-                        )
+                        )*/
+                val healthData = mapOf(
+                    "Total step count" to it.totalSteps,
+                    "Total calories (Cal)" to it.totalHeat,
+                    "Total distance (m)" to it.totalDistance,
+                    "Total sleep duration (minutes)" to it.totalSleep,
+                    "Deep sleep duration" to it.totalDeepSleep,
+                    "Light sleep duration" to it.totalLightSleep,
+                    "Current heart rate" to it.currentHeartRate,
+                    "Current blood pressure" to "${it.currentSs}/${it.currentFz}",
+                    "Current blood oxygen" to it.currentBloodOxygen,
+                    "Current pressure" to it.currentPressure,
+                    "Current MAI" to it.currentMai,
+                    "Current MET" to it.currentMet,
+                    "Current temperature" to it.currentTemp,
+                    "Current blood sugar" to it.currentBloodSugar,
+                    "Is worn" to it.isWear,
+                    "Respiration rate" to it.respirationRate,
+                    "Shake head" to it.shakeHead
+                )
+                bleHealthResponseLabel.value =healthData
+                bleResponseLabel.value = healthData.entries.joinToString("\n") { (key, value) ->
+                    "$key: $value"
+                }
+                print(bleHealthResponseLabel.value)
                 print(bleResponseLabel.value)
             } else {
                 bleResponseLabel.value = statusLabel(it.status)

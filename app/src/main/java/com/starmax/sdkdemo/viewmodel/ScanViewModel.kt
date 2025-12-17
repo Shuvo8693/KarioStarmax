@@ -71,6 +71,7 @@ class ScanViewModel() : ViewModel() {
                                         0xAA.toByte(), 0xEE.toByte()
                                     ))){
                                     broadcast[bleDevice.mac] = getFF0002AAEEStr(rawData)
+                                    print(broadcast[bleDevice.mac])
                                 } else if(rawData.slice(2 .. 3).toByteArray().contentEquals(byteArrayOf(0xBB.toByte(), 0xEE.toByte()))){
                                     broadcast[bleDevice.mac] = getFF0002BBEEStr(rawData)
                                 } else if(rawData.slice(2 .. 3).toByteArray().contentEquals(byteArrayOf(

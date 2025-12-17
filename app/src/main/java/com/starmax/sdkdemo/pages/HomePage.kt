@@ -1,3 +1,4 @@
+/*
 package com.starmax.sdkdemo.pages
 
 import android.provider.CalendarContract
@@ -264,9 +265,7 @@ fun HomePage(navController: NavController) {
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
+                                modifier = Modifier.padding(16.dp).fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
 
@@ -426,4 +425,411 @@ fun HomePage(navController: NavController) {
 fun PreviewHomePage() {
     val navController = rememberNavController()
     HomePage(navController)
+}*/
+
+
+package com.starmax.sdkdemo.pages
+
+import android.provider.CalendarContract
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.twotone.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.starmax.sdkdemo.dialogs.*
+import com.starmax.sdkdemo.ui.theme.AppTheme
+import com.starmax.sdkdemo.viewmodel.BleState
+import com.starmax.sdkdemo.viewmodel.BleViewModel
+import com.starmax.sdkdemo.viewmodel.HomeViewModel
+import com.starmax.sdkdemo.viewmodel.OtaViewModel
+import com.starmax.sdkdemo.viewmodel.SetNetModel
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomePage(navController: NavController) {
+    val netViewModel: SetNetModel = koinViewModel()
+    val bleViewModel: BleViewModel by lazyKoinViewModel()
+    val otaViewModel: OtaViewModel by lazyKoinViewModel()
+    val viewModel: HomeViewModel by lazyKoinViewModel()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Observer for OTA messages
+    otaViewModel.otaMessage.observeForever { message ->
+        scope.launch {
+            if (message.isNotEmpty()) {
+                bleViewModel.bleMessage.value = message
+            }
+        }
+    }
+
+    AppTheme {
+        // All dialogs
+        if (viewModel.openNetDialog) SetNetDialog()
+        if (viewModel.openFileSystemDialog) FileSystemDialog()
+        if (viewModel.openVolumeDialog) VolumeDialog()
+        if (viewModel.openNfcDialog) NfcCardDialog()
+        if (viewModel.openStateDialog) SetStateDialog()
+        if (viewModel.openCameraDialog) CameraControlDialog()
+        if (viewModel.openCustomOnOffDialog) CustomOnOffDialog()
+        if (viewModel.openCustomDeviceModeDialog) CustomDeviceModeDialog()
+        if (viewModel.openSportSyncToDeviceDialog) SportSyncToDeviceDialog()
+        if (viewModel.openCustomDeviceNameDialog) CustomDeviceNameDialog()
+        if (viewModel.openCustomDeviceShakeTimeDialog) CustomDeviceShakeTimeDialog()
+        if (viewModel.openCustomDeviceShakeOnOffDialog) CustomDeviceShakeOnOffDialog()
+        if (viewModel.openSportModeOnOffDialog) CustomSportModeOnOffDialog()
+        if (viewModel.openCustomBroadcastDialog) CustomBroadcastDialog()
+        if (viewModel.openCallDialog) CallControlDialog()
+        if (viewModel.openDateFormatDialog) DateFormatDialog()
+        if (viewModel.openNotDisturbDialog) SetNotDisturbDialog()
+        if (viewModel.openUserInfoDialog) SetUserInfoDialog()
+        if (viewModel.openGoalsDialog) SetGoalsDialog()
+        if (viewModel.openHealthOpenDialog) SetHealthOpenDialog()
+        if (viewModel.openHeartRateDialog) SetHeartDialog()
+        if (viewModel.openRealTimeDataDialog) SetRealTimeDataOpenDialog()
+        if (viewModel.openRealTimeMeasureDialog) SetRealTimeDataMeasureDialog()
+        if (viewModel.openContactDialog) SetContactDialog()
+        if (viewModel.openSosDialog) SetSosDialog()
+        if (viewModel.openAppDialog) AppDialog()
+        if (viewModel.openMessageDialog) MessageDialog()
+        if (viewModel.openWorldClockDialog) WorldClockDialog()
+        if (viewModel.openPasswordDialog) PasswordDialog()
+        if (viewModel.openFemaleHealthDialog) FemaleHealthDialog()
+        if (viewModel.openBloodSugarCalibrationDialog) BloodSugarCalibrationDialog()
+        if (viewModel.openBloodPressureCalibrationDialog) BloodPressureCalibrationDialog()
+
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Health",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            viewModel.toInstructionList(navController)
+                        }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                        IconButton(onClick = {
+                            viewModel.toScan(navController)
+                        }) {
+                            Icon(Icons.Default.Add, contentDescription = "Add")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            },
+            content = { innerPadding ->
+                LazyColumn(
+                    contentPadding = innerPadding,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // ================= WELLNESS WATCH CARD =================
+                    item {
+                        WellnessCard(bleViewModel)
+                    }
+
+                    // ================= TODAY'S STATS =================
+                    item {
+                        TodayStatsRow(bleViewModel)
+                    }
+
+                    // ================= HEALTH METRICS GRID =================
+                    item {
+                        HealthMetricsGrid(bleViewModel)
+                    }
+
+                    // ================= EDIT DATA CARD BUTTON =================
+//                    item {
+//                        TextButton(
+//                            onClick = { viewModel.toScan(navController) },
+//                            modifier = Modifier.fillMaxWidth()
+//                        ) {
+//                            Text("Edit data card")
+//                        }
+//                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun WellnessCard(bleViewModel: BleViewModel) {
+    val bleDevice = bleViewModel.bleDevice
+    val isConnected = bleDevice?.get() != null
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFB8E6D5)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = if (isConnected) bleViewModel.getDeviceName().uppercase()
+                else "KARIO WELLNESS WATCH",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E5A3C)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (isConnected)
+                    "Connected • ${bleDevice!!.get()!!.mac}"
+                else
+                    "Wear 2 more nights for Runmefit AI to learn your sleep pattern",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF1E5A3C).copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+fun TodayStatsRow(bleViewModel: BleViewModel) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        StatItem(
+            icon = Icons.Default.DirectionsWalk,
+            value = bleViewModel.bleHealthResponseLabel.value["Total step count"]?.toString() ?:"_",
+            label = "steps",
+            iconColor = Color(0xFF34A853)
+        )
+        StatItem(
+            icon = Icons.Default.Place,
+            value = bleViewModel.bleHealthResponseLabel.value["Total distance (m)"]?.toString() ?:"_",
+            label = "miles",
+            iconColor = Color(0xFF4285F4)
+        )
+        StatItem(
+            icon = Icons.Default.LocalFireDepartment,
+            value = bleViewModel.bleHealthResponseLabel.value["Total calories (Cal)"]?.toString() ?:"_",
+            label = "kcal",
+            iconColor = Color(0xFFEA4335)
+        )
+    }
+}
+
+@Composable
+fun StatItem(
+    icon: ImageVector,
+    value: String,
+    label: String,
+    iconColor: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.size(32.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun HealthMetricsGrid(bleViewModel: BleViewModel) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Row 1
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            HealthMetricCard(
+                title = "Heart rate",
+                value = bleViewModel.bleHealthResponseLabel.value["Current heart rate"]?.toString() ?:"No Data",
+                icon = Icons.Default.Favorite,
+                iconColor = Color(0xFFEA4335),
+                modifier = Modifier.weight(1f)
+            )
+            HealthMetricCard(
+                title = "Sleep",
+                value = bleViewModel.bleHealthResponseLabel.value["Total sleep duration (minutes)"]?.toString() ?:"No Data",
+                icon = Icons.Default.Bedtime,
+                iconColor = Color(0xFF9C27B0),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 2
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            HealthMetricCard(
+                title = "Sports records",
+                value = "No data",
+                icon = Icons.Default.DirectionsRun,
+                iconColor = Color(0xFFFF9800),
+                modifier = Modifier.weight(1f)
+            )
+            HealthMetricCard(
+                title = "Mood tracking",
+                value = "No data",
+                icon = Icons.Default.EmojiEmotions,
+                iconColor = Color(0xFF2196F3),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 3
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            HealthMetricCard(
+                title = "Weight",
+                value = "No data",
+                icon = Icons.Default.MonitorWeight,
+                iconColor = Color(0xFF00BCD4),
+                modifier = Modifier.weight(1f)
+            )
+            HealthMetricCard(
+                title = "Blood oxygen",
+                value = bleViewModel.bleHealthResponseLabel.value["Current blood oxygen"]?.toString() ?:"No Data",
+                icon = Icons.Default.Opacity,
+                iconColor = Color(0xFFEA4335),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 4
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            HealthMetricCard(
+                title = "Blood Glucose",
+                value = bleViewModel.bleHealthResponseLabel.value["Current blood sugar"]?.toString() ?:"No Data",
+                icon = Icons.Default.WaterDrop,
+                iconColor = Color(0xFFFFC107),
+                modifier = Modifier.weight(1f)
+            )
+            HealthMetricCard(
+                title = "Skin temperature",
+                value = bleViewModel.bleHealthResponseLabel.value["Current temperature"]?.toString() ?:"No Data",
+                icon = Icons.Default.Thermostat,
+                iconColor = Color(0xFFE91E63),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 5 (single item)
+        HealthMetricCard(
+            title = "HRV",
+            value = "No data",
+            icon = Icons.Default.Timeline,
+            iconColor = Color(0xFFFF5252),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun HealthMetricCard(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    iconColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(iconColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconColor,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
 }
