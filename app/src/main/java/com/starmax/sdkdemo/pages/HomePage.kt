@@ -472,6 +472,12 @@ fun HomePage(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(bleViewModel.bleDevice?.get()) {
+        if (bleViewModel.bleDevice?.get() != null){
+            bleViewModel.getHealthDetail()
+        }
+    }
+
     // Observer for OTA messages
     otaViewModel.otaMessage.observeForever { message ->
         scope.launch {
@@ -480,6 +486,7 @@ fun HomePage(navController: NavController) {
             }
         }
     }
+
 
     AppTheme {
         // All dialogs
@@ -766,16 +773,30 @@ fun HealthMetricsGrid(bleViewModel: BleViewModel) {
                 iconColor = Color(0xFFE91E63),
                 modifier = Modifier.weight(1f)
             )
+
         }
 
         // Row 5 (single item)
-        HealthMetricCard(
-            title = "HRV",
-            value = "No data",
-            icon = Icons.Default.Timeline,
-            iconColor = Color(0xFFFF5252),
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            HealthMetricCard(
+                title = "Blood Pressure",
+                value = bleViewModel.bleHealthResponseLabel.value["Current blood pressure"]?.toString() ?:"No Data",
+                icon = Icons.Default.Bloodtype,
+                iconColor = Color(0xFFE91E63),
+                modifier = Modifier.weight(1f)
+            )
+
+            HealthMetricCard(
+                title = "HRV",
+                value = "No data",
+                icon = Icons.Default.Timeline,
+                iconColor = Color(0xFFFF5252),
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
@@ -795,7 +816,9 @@ fun HealthMetricCard(
         )
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

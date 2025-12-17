@@ -857,7 +857,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         )*/
                 val healthData = mapOf(
                     "Total step count" to it.totalSteps,
-                    "Total calories (Cal)" to it.totalHeat,
+                    "Total calories (Cal)" to it.totalHeat / 100.0,
                     "Total distance (m)" to it.totalDistance,
                     "Total sleep duration (minutes)" to it.totalSleep,
                     "Deep sleep duration" to it.totalDeepSleep,
@@ -868,7 +868,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     "Current pressure" to it.currentPressure,
                     "Current MAI" to it.currentMai,
                     "Current MET" to it.currentMet,
-                    "Current temperature" to it.currentTemp,
+                    "Current temperature" to it.currentTemp/10.0,
                     "Current blood sugar" to it.currentBloodSugar,
                     "Is worn" to it.isWear,
                     "Respiration rate" to it.respirationRate,
