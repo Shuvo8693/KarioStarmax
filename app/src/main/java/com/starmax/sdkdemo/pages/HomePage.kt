@@ -430,8 +430,11 @@ fun PreviewHomePage() {
 
 package com.starmax.sdkdemo.pages
 
+import android.R
+import android.graphics.drawable.Icon
 import android.provider.CalendarContract
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -442,12 +445,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.twotone.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -459,8 +465,11 @@ import com.starmax.sdkdemo.viewmodel.BleViewModel
 import com.starmax.sdkdemo.viewmodel.HomeViewModel
 import com.starmax.sdkdemo.viewmodel.OtaViewModel
 import com.starmax.sdkdemo.viewmodel.SetNetModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 import org.koin.androidx.compose.koinViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -472,11 +481,8 @@ fun HomePage(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(bleViewModel.bleDevice?.get()) {
-        if (bleViewModel.bleDevice?.get() != null){
-            bleViewModel.getHealthDetail()
-        }
-    }
+    // Pull to refresh state
+
 
     // Observer for OTA messages
     otaViewModel.otaMessage.observeForever { message ->
@@ -484,6 +490,30 @@ fun HomePage(navController: NavController) {
             if (message.isNotEmpty()) {
                 bleViewModel.bleMessage.value = message
             }
+        }
+    }
+    val pullToRefreshState = rememberPullToRefreshState()
+    // Handle refresh
+    LaunchedEffect(pullToRefreshState.isRefreshing) {
+        if (pullToRefreshState.isRefreshing) {
+            // Check if connected
+            if (bleViewModel.bleState != BleState.CONNECTED) {
+                snackbarHostState.showSnackbar("Device not connected")
+                pullToRefreshState.endRefresh()
+                return@LaunchedEffect
+            }
+
+            // Refresh all health data
+            bleViewModel.getHealthDetail()
+            bleViewModel.getPower()
+            bleViewModel.getStepHistory(System.currentTimeMillis())
+            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
+
+            // Wait for data to load
+            delay(2000)
+
+            pullToRefreshState.endRefresh()
+            snackbarHostState.showSnackbar("Data refreshed")
         }
     }
 
@@ -527,6 +557,13 @@ fun HomePage(navController: NavController) {
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            viewModel.toInstructionList(navController)
+                        }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
                     title = {
                         Text(
                             text = "Health",
@@ -535,16 +572,12 @@ fun HomePage(navController: NavController) {
                         )
                     },
                     actions = {
-                        IconButton(onClick = {
-                            viewModel.toInstructionList(navController)
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                        IconButton(onClick = {
+
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
                             viewModel.toScan(navController)
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
-                        }
+                        }, text = "Pair Device")
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface
@@ -552,37 +585,47 @@ fun HomePage(navController: NavController) {
                 )
             },
             content = { innerPadding ->
-                LazyColumn(
-                    contentPadding = innerPadding,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(pullToRefreshState.nestedScrollConnection)
                 ) {
-                    // ================= WELLNESS WATCH CARD =================
-                    item {
-                        WellnessCard(bleViewModel)
-                    }
+                    LazyColumn(
+                        contentPadding = innerPadding,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // ================= WELLNESS WATCH CARD =================
+                        item {
+                            WellnessCard(bleViewModel)
+                        }
 
-                    // ================= TODAY'S STATS =================
-                    item {
-                        TodayStatsRow(bleViewModel)
-                    }
+                        // ================= TODAY'S STATS =================
+                        item {
+                            TodayStatsRow(bleViewModel)
+                        }
 
-                    // ================= HEALTH METRICS GRID =================
-                    item {
-                        HealthMetricsGrid(bleViewModel)
-                    }
+                        // ================= HEALTH METRICS GRID =================
+                        item {
+                            HealthMetricsGrid(bleViewModel)
+                        }
 
-                    // ================= EDIT DATA CARD BUTTON =================
-//                    item {
-//                        TextButton(
-//                            onClick = { viewModel.toScan(navController) },
-//                            modifier = Modifier.fillMaxWidth()
-//                        ) {
-//                            Text("Edit data card")
-//                        }
-//                    }
+                        // ================= EDIT DATA CARD BUTTON =================
+                        /*item {
+                            TextButton(
+                                onClick = { viewModel.toScan(navController) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Edit data card")
+                            }
+                        }*/
+
+                    }
+                    PullToRefreshContainer(
+                        state = pullToRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
                 }
             }
         )
@@ -607,23 +650,48 @@ fun WellnessCard(bleViewModel: BleViewModel) {
                 .padding(16.dp)
         ) {
             Text(
-                text = if (isConnected) bleViewModel.getDeviceName().uppercase()
-                else "KARIO WELLNESS WATCH",
+                text = "KARIO WELLNESS WATCH",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
+                fontSize = 23.sp,
                 color = Color(0xFF1E5A3C)
             )
-
+            Spacer(modifier = Modifier.height(8.dp))
+            if(isConnected)
+            Row(
+                modifier = Modifier
+            ) {
+                Icon(imageVector = Icons.Filled.Watch, contentDescription = null,tint = Color.White)
+                Text(
+                    text = bleViewModel.getDeviceName().uppercase(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 23.sp,
+                    color = Color(0xFF1E5A3C)
+                )
+            }
+            if(isConnected)
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = if (isConnected)
                     "Connected • ${bleDevice!!.get()!!.mac}"
                 else
-                    "Wear 2 more nights for Runmefit AI to learn your sleep pattern",
+                    "Wear 2 more nights for Kario AI to learn your sleep pattern",
                 style = MaterialTheme.typography.bodySmall,
+                fontSize = 17.sp,
                 color = Color(0xFF1E5A3C).copy(alpha = 0.7f)
             )
+            if (isConnected)
+                Row {
+                    Icon(imageVector = Icons.Filled.Battery6Bar, contentDescription = null,tint = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = bleViewModel.bleBatteryResponseLabel.value,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF1E5A3C).copy(alpha = 0.7f)
+                    )
+                }
         }
     }
 }
@@ -636,19 +704,22 @@ fun TodayStatsRow(bleViewModel: BleViewModel) {
     ) {
         StatItem(
             icon = Icons.Default.DirectionsWalk,
-            value = bleViewModel.bleHealthResponseLabel.value["Total step count"]?.toString() ?:"_",
+            value = bleViewModel.bleHealthResponseLabel.value["Total step count"]?.toString()
+                ?: "_",
             label = "steps",
             iconColor = Color(0xFF34A853)
         )
         StatItem(
             icon = Icons.Default.Place,
-            value = bleViewModel.bleHealthResponseLabel.value["Total distance (m)"]?.toString() ?:"_",
+            value = bleViewModel.bleHealthResponseLabel.value["Total distance (m)"]?.toString()
+                ?: "_",
             label = "miles",
             iconColor = Color(0xFF4285F4)
         )
         StatItem(
             icon = Icons.Default.LocalFireDepartment,
-            value = bleViewModel.bleHealthResponseLabel.value["Total calories (Cal)"]?.toString() ?:"_",
+            value = bleViewModel.bleHealthResponseLabel.value["Total calories (Cal)"]?.toString()
+                ?: "_",
             label = "kcal",
             iconColor = Color(0xFFEA4335)
         )
@@ -698,14 +769,16 @@ fun HealthMetricsGrid(bleViewModel: BleViewModel) {
         ) {
             HealthMetricCard(
                 title = "Heart rate",
-                value = bleViewModel.bleHealthResponseLabel.value["Current heart rate"]?.toString() ?:"No Data",
+                value = bleViewModel.bleHealthResponseLabel.value["Current heart rate"]?.toString()
+                    ?: "No Data",
                 icon = Icons.Default.Favorite,
                 iconColor = Color(0xFFEA4335),
                 modifier = Modifier.weight(1f)
             )
             HealthMetricCard(
                 title = "Sleep",
-                value = bleViewModel.bleHealthResponseLabel.value["Total sleep duration (minutes)"]?.toString() ?:"No Data",
+                value = bleViewModel.bleHealthResponseLabel.value["Total sleep duration (minutes)"]?.toString()
+                    ?: "No Data",
                 icon = Icons.Default.Bedtime,
                 iconColor = Color(0xFF9C27B0),
                 modifier = Modifier.weight(1f)
@@ -747,7 +820,8 @@ fun HealthMetricsGrid(bleViewModel: BleViewModel) {
             )
             HealthMetricCard(
                 title = "Blood oxygen",
-                value = bleViewModel.bleHealthResponseLabel.value["Current blood oxygen"]?.toString() ?:"No Data",
+                value = bleViewModel.bleHealthResponseLabel.value["Current blood oxygen"]?.toString()
+                    ?: "No Data",
                 icon = Icons.Default.Opacity,
                 iconColor = Color(0xFFEA4335),
                 modifier = Modifier.weight(1f)
@@ -761,14 +835,16 @@ fun HealthMetricsGrid(bleViewModel: BleViewModel) {
         ) {
             HealthMetricCard(
                 title = "Blood Glucose",
-                value = bleViewModel.bleHealthResponseLabel.value["Current blood sugar"]?.toString() ?:"No Data",
+                value = bleViewModel.bleHealthResponseLabel.value["Current blood sugar"]?.toString()
+                    ?: "No Data",
                 icon = Icons.Default.WaterDrop,
                 iconColor = Color(0xFFFFC107),
                 modifier = Modifier.weight(1f)
             )
             HealthMetricCard(
                 title = "Skin temperature",
-                value = bleViewModel.bleHealthResponseLabel.value["Current temperature"]?.toString() ?:"No Data",
+                value = bleViewModel.bleHealthResponseLabel.value["Current temperature"]?.toString()
+                    ?: "No Data",
                 icon = Icons.Default.Thermostat,
                 iconColor = Color(0xFFE91E63),
                 modifier = Modifier.weight(1f)
@@ -783,7 +859,8 @@ fun HealthMetricsGrid(bleViewModel: BleViewModel) {
         ) {
             HealthMetricCard(
                 title = "Blood Pressure",
-                value = bleViewModel.bleHealthResponseLabel.value["Current blood pressure"]?.toString() ?:"No Data",
+                value = bleViewModel.bleHealthResponseLabel.value["Current blood pressure"]?.toString()
+                    ?: "No Data",
                 icon = Icons.Default.Bloodtype,
                 iconColor = Color(0xFFE91E63),
                 modifier = Modifier.weight(1f)
@@ -835,7 +912,7 @@ fun HealthMetricCard(
                     text = value,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+//                    color = Color.Black
                 )
             }
 

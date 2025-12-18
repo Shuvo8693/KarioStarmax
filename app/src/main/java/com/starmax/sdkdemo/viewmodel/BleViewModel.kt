@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -173,6 +174,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     var bleResponseLabel = mutableStateOf("")
         private set
     var bleHealthResponseLabel = mutableStateOf<Map<String, Any>>(emptyMap())
+    var bleBatteryResponseLabel = mutableStateOf("")
 
     val context: Context by inject()
 
@@ -732,8 +734,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun getPower() {
         initData()
         StarmaxBleClient.instance.getPower().subscribe({
-            bleResponseLabel.value =
-                ("Battery level: ${it.power}\n" + "Charging: ${it.isCharge}")
+            bleBatteryResponseLabel.value = ("Battery level: ${it.power}%\n" + "Charging: ${it.isCharge}")
         }, {
 
         }).let {
@@ -834,7 +835,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun getHealthDetail() {
         initData()
+        StarmaxBleClient.instance.getHeartRateControl().subscribe({
+            if(it.status==0){
+
+            }
+        },{}).let {  }
         StarmaxBleClient.instance.getHealthDetail().subscribe({
+
             if (it.status == 0) {
               /*  bleResponseLabel.value = (
                         "Total step count:${it.totalSteps}\n"
@@ -857,19 +864,19 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         )*/
                 val healthData = mapOf(
                     "Total step count" to it.totalSteps,
-                    "Total calories (Cal)" to it.totalHeat / 100.0,
-                    "Total distance (m)" to it.totalDistance,
+                    "Total calories (Cal)" to String.format(java.util.Locale.US,"%.2f",(it.totalHeat / 100.0 ))  ,
+                    "Total distance (m)" to it.totalDistance / 100.0,
                     "Total sleep duration (minutes)" to it.totalSleep,
                     "Deep sleep duration" to it.totalDeepSleep,
                     "Light sleep duration" to it.totalLightSleep,
                     "Current heart rate" to it.currentHeartRate,
-                    "Current blood pressure" to "${it.currentSs}/${it.currentFz}",
-                    "Current blood oxygen" to it.currentBloodOxygen,
+                    "Current blood pressure" to "${it.currentSs}/${it.currentFz} mmHg",
+                    "Current blood oxygen" to "${it.currentBloodOxygen}%",
                     "Current pressure" to it.currentPressure,
                     "Current MAI" to it.currentMai,
                     "Current MET" to it.currentMet,
-                    "Current temperature" to it.currentTemp/10.0,
-                    "Current blood sugar" to it.currentBloodSugar,
+                    "Current temperature" to "${(it.currentTemp/10.0)}\u00B0 C",
+                    "Current blood sugar" to it.currentBloodSugar / 10.0,
                     "Is worn" to it.isWear,
                     "Respiration rate" to it.respirationRate,
                     "Shake head" to it.shakeHead
