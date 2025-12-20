@@ -712,9 +712,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         Utils.p(StarmaxSend().getBtStatus())
 
-        StarmaxBleClient.instance.getBtStatus().subscribe({
-            bleResponseLabel.value = "BT status: " + it.btStatus
-        }, {
+        StarmaxBleClient.instance.getBtStatus().subscribe({ bleResponseLabel.value = "BT status: " + it.btStatus }, {
 
         }).let {
             sendDisposable.add(it)
@@ -835,11 +833,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun getHealthDetail() {
         initData()
-        StarmaxBleClient.instance.getHeartRateControl().subscribe({
-            if(it.status==0){
-
-            }
-        },{}).let {  }
+//        StarmaxBleClient.instance.getHeartRateControl().subscribe({
+//            if(it.status==0){
+//             print(it)
+//            }
+//        },{}).let {  }
         StarmaxBleClient.instance.getHealthDetail().subscribe({
 
             if (it.status == 0) {
@@ -881,7 +879,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     "Respiration rate" to it.respirationRate,
                     "Shake head" to it.shakeHead
                 )
-                bleHealthResponseLabel.value =healthData
+                bleHealthResponseLabel.value = healthData
                 bleResponseLabel.value = healthData.entries.joinToString("\n") { (key, value) ->
                     "$key: $value"
                 }

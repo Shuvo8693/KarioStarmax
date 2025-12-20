@@ -430,7 +430,6 @@ fun PreviewHomePage() {
 
 package com.starmax.sdkdemo.pages
 
-import android.R
 import android.graphics.drawable.Icon
 import android.provider.CalendarContract
 import androidx.compose.foundation.background
@@ -465,6 +464,7 @@ import com.starmax.sdkdemo.viewmodel.BleViewModel
 import com.starmax.sdkdemo.viewmodel.HomeViewModel
 import com.starmax.sdkdemo.viewmodel.OtaViewModel
 import com.starmax.sdkdemo.viewmodel.SetNetModel
+import kotlinx.coroutines.Delay
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
@@ -492,6 +492,50 @@ fun HomePage(navController: NavController) {
             }
         }
     }
+    // ═══════════════════════════════════════════════════════
+    // ✅ INITIALIZE DATA WHEN SCREEN LOADS
+    // ═══════════════════════════════════════════════════════
+    LaunchedEffect(Unit) {
+        if(bleViewModel.bleState == BleState.CONNECTED){
+        bleViewModel.getHealthDetail()
+        bleViewModel.getPower()
+        bleViewModel.getStepHistory(System.currentTimeMillis())
+        bleViewModel.getHeartRateHistory(System.currentTimeMillis())
+            print(bleViewModel.bleHealthResponseLabel)
+            print(bleViewModel.bleBatteryResponseLabel)
+      }
+    }
+    // ═══════════════════════════════════════════════════════
+    // ✅ RE-FETCH DATA WHEN CONNECTION STATE CHANGES
+    // ═══════════════════════════════════════════════════════
+    LaunchedEffect(bleViewModel.bleState) {
+        if(bleViewModel.bleState == BleState.CONNECTED){
+            delay(1000)
+            bleViewModel.getHealthDetail()
+            bleViewModel.getPower()
+            bleViewModel.getStepHistory(System.currentTimeMillis())
+            print(bleViewModel.bleHealthResponseLabel.value)
+            print(bleViewModel.bleBatteryResponseLabel.value)
+
+        }
+    }
+
+    LaunchedEffect( bleViewModel.bleDevice) {
+        val bleDevice = bleViewModel.bleDevice
+        if(bleDevice?.get() != null){
+            delay(1000)
+            bleViewModel.getHealthDetail()
+            bleViewModel.getPower()
+            bleViewModel.getStepHistory(System.currentTimeMillis())
+            print(bleViewModel.bleHealthResponseLabel.value)
+            print(bleViewModel.bleBatteryResponseLabel.value)
+
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ✅ PULL To LOAD DATA
+    // ═══════════════════════════════════════════════════════
     val pullToRefreshState = rememberPullToRefreshState()
     // Handle refresh
     LaunchedEffect(pullToRefreshState.isRefreshing) {

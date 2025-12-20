@@ -29,7 +29,8 @@ inline fun <reified T : ViewModel> lazyKoinViewModel(
 ): Lazy<T> {
     val context = LocalContext.current
     return lazyResolveViewModel(
-        T::class, { if(context is MainActivity) context.viewModelStore else viewModelStoreOwner.viewModelStore }, key,
+        T::class, {
+            if(context is MainActivity) context.viewModelStore else viewModelStoreOwner.viewModelStore }, key,
         { extras }, qualifier, scope, parameters
     )
 }
