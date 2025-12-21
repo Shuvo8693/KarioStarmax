@@ -481,8 +481,6 @@ fun HomePage(navController: NavController) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Pull to refresh state
-
 
     // Observer for OTA messages
     otaViewModel.otaMessage.observeForever { message ->
@@ -508,7 +506,7 @@ fun HomePage(navController: NavController) {
     // ═══════════════════════════════════════════════════════
     // ✅ RE-FETCH DATA WHEN CONNECTION STATE CHANGES
     // ═══════════════════════════════════════════════════════
-    LaunchedEffect(bleViewModel.bleState) {
+/*    LaunchedEffect(bleViewModel.bleState) {
         if(bleViewModel.bleState == BleState.CONNECTED){
             delay(1000)
             bleViewModel.getHealthDetail()
@@ -518,9 +516,9 @@ fun HomePage(navController: NavController) {
             print(bleViewModel.bleBatteryResponseLabel.value)
 
         }
-    }
+    }*/
 
-    LaunchedEffect( bleViewModel.bleDevice) {
+/*    LaunchedEffect( bleViewModel.bleDevice) {
         val bleDevice = bleViewModel.bleDevice
         if(bleDevice?.get() != null){
             delay(1000)
@@ -531,7 +529,7 @@ fun HomePage(navController: NavController) {
             print(bleViewModel.bleBatteryResponseLabel.value)
 
         }
-    }
+    }*/
 
     // ═══════════════════════════════════════════════════════
     // ✅ PULL To LOAD DATA
@@ -679,7 +677,7 @@ fun HomePage(navController: NavController) {
 @Composable
 fun WellnessCard(bleViewModel: BleViewModel) {
     val bleDevice = bleViewModel.bleDevice
-    val isConnected = bleDevice?.get() != null
+    val isConnected = bleDevice?.get() != null && bleViewModel.bleState == BleState.CONNECTED
 
     Card(
         modifier = Modifier.fillMaxWidth(),
