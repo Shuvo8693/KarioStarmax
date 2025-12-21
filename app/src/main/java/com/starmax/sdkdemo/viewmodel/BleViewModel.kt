@@ -838,6 +838,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
 //             print(it)
 //            }
 //        },{}).let {  }
+//        StarmaxBleClient.instance.healthMeasureStream().subscribe({
+//            if (it.status==0){
+//                print(it)
+//            }
+//        },{}).let {  }
         StarmaxBleClient.instance.getHealthDetail().subscribe({
 
             if (it.status == 0) {
@@ -862,12 +867,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         )*/
                 val healthData = mapOf(
                     "Total step count" to it.totalSteps,
-                    "Total calories (Cal)" to String.format(java.util.Locale.US,"%.2f",(it.totalHeat / 100.0 ))  ,
-                    "Total distance (m)" to it.totalDistance / 100.0,
+                    "Total calories (Cal)" to String.format(java.util.Locale.US,"%.2f",(it.totalHeat / 1000.0 ))  ,
+                    "Total distance (m)" to String.format( java.util.Locale.US,"%.3f",it.totalDistance / 1609.34), //meter unit is converted to miles (1 mile = 1609.34 meter)
                     "Total sleep duration (minutes)" to it.totalSleep,
                     "Deep sleep duration" to it.totalDeepSleep,
                     "Light sleep duration" to it.totalLightSleep,
-                    "Current heart rate" to it.currentHeartRate,
+                    "Current heart rate" to "${ it.currentHeartRate } bpm",
                     "Current blood pressure" to "${it.currentSs}/${it.currentFz} mmHg",
                     "Current blood oxygen" to "${it.currentBloodOxygen}%",
                     "Current pressure" to it.currentPressure,
@@ -1960,7 +1965,6 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun getSleepHistory(time: Long) {
         initData()
         val calendar = Calendar.getInstance().apply { timeInMillis = time }
-
         StarmaxBleClient.instance.getSleepHistory(calendar).subscribe({
             if (it.status == 0) {
                 var str =

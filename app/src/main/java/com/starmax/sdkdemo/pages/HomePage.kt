@@ -430,6 +430,7 @@ fun PreviewHomePage() {
 
 package com.starmax.sdkdemo.pages
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Icon
 import android.provider.CalendarContract
 import androidx.compose.foundation.background
@@ -497,6 +498,7 @@ fun HomePage(navController: NavController) {
         if(bleViewModel.bleState == BleState.CONNECTED){
         bleViewModel.getHealthDetail()
         bleViewModel.getPower()
+            bleViewModel.getSleepHistory(System.currentTimeMillis())
         bleViewModel.getStepHistory(System.currentTimeMillis())
         bleViewModel.getHeartRateHistory(System.currentTimeMillis())
             print(bleViewModel.bleHealthResponseLabel)
@@ -674,6 +676,7 @@ fun HomePage(navController: NavController) {
     }
 }
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun WellnessCard(bleViewModel: BleViewModel) {
     val bleDevice = bleViewModel.bleDevice

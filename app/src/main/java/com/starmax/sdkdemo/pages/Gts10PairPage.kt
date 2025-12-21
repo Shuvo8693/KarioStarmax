@@ -46,7 +46,7 @@ fun Gts10PairPageView(navController: NavController, viewModel: Gts10PairViewMode
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
-                        Text(text = "GTS10配对")
+                        Text(text = "\n" + "GTS10 pairing")
                     },
                     navigationIcon = {
                         IconButton(onClick = {
