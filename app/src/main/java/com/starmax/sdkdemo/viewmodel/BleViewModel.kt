@@ -2103,7 +2103,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getValidHistoryDates(historyType).subscribe({
             if (it.status == 0) {
-                var str = "有效日期\n"
+                var str = "Valid date\n"
 
                 val dataList = it.dataList
                 for (i in 0 until dataList.size) {
