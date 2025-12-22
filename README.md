@@ -1,0 +1,1 @@
+This is an smarwatch app build with kotlin compose, this is an demo app to make communicating data through BLE to show those data and test every watch features. this app work with only specific watches watches. 
