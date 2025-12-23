@@ -1688,10 +1688,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Heart rate: ${data.value}%\n"
+                    if(data.value!=0){
+                        str += "Time: ${data.hour}:${data.minute} Heart rate: ${data.value} bpm\n"
+                    }
                 }
-
                 bleResponseLabel.value = str
+                println(str)
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -3362,11 +3364,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
     }
 
     /**
-     * Send a BLE message
+     *======================== Send a BLE message =================================
      */
     fun sendMsg(data: ByteArray?) {
-        if (bleDevice == null || bleDevice!!.get() == null || !BleManager.getInstance()
-                .isConnected(bleDevice!!.get())
+        if (bleDevice == null || bleDevice!!.get() == null || !BleManager.getInstance().isConnected(bleDevice!!.get())
         ) {
             sendDisposable.clear() // Clear sending queue
             viewModelScope.launch {

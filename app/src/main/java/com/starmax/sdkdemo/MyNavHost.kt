@@ -14,6 +14,7 @@ import com.starmax.sdkdemo.pages.GoalsDayAndNightPage
 import com.starmax.sdkdemo.pages.GoalsNotUpPage
 import com.starmax.sdkdemo.pages.Gts10HealthIntervalPage
 import com.starmax.sdkdemo.pages.Gts10PairPage
+import com.starmax.sdkdemo.pages.HealthHistoryPage
 import com.starmax.sdkdemo.pages.HomePage
 import com.starmax.sdkdemo.pages.InstructionListPage
 import com.starmax.sdkdemo.pages.QuickBatteryModePage
@@ -30,7 +31,8 @@ enum class NavPage {
     Gts10HealthIntervalPage,
     InstructionListPage,
     EventReminderPage,
-    Gts10PairPage
+    Gts10PairPage,
+    HealthHistoryPage
 }
 
 val LocalNavController = staticCompositionLocalOf<NavHostController> {
@@ -81,6 +83,9 @@ fun MyNavHost(navController: NavHostController) {
         }
         composable(NavPage.Gts10PairPage.name){
             Gts10PairPage(navController)
+        }
+        composable(NavPage.HealthHistoryPage.name){
+            HealthHistoryPage(navController)
         }
     }
 }

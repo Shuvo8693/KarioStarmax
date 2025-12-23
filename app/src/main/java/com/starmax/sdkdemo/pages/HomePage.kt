@@ -495,15 +495,15 @@ fun HomePage(navController: NavController) {
     // ✅ INITIALIZE DATA WHEN SCREEN LOADS
     // ═══════════════════════════════════════════════════════
     LaunchedEffect(Unit) {
-        if(bleViewModel.bleState == BleState.CONNECTED){
-        bleViewModel.getHealthDetail()
-        bleViewModel.getPower()
-            bleViewModel.getSleepHistory(System.currentTimeMillis())
-        bleViewModel.getStepHistory(System.currentTimeMillis())
-        bleViewModel.getHeartRateHistory(System.currentTimeMillis())
+        if (bleViewModel.bleState == BleState.CONNECTED) {
+            bleViewModel.getHealthDetail()
+            bleViewModel.getPower()
+//            bleViewModel.getSleepHistory(System.currentTimeMillis())
+//            bleViewModel.getStepHistory(System.currentTimeMillis())
+//            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
             print(bleViewModel.bleHealthResponseLabel)
             print(bleViewModel.bleBatteryResponseLabel)
-      }
+        }
     }
     // ═══════════════════════════════════════════════════════
     // ✅ RE-FETCH DATA WHEN CONNECTION STATE CHANGES
@@ -550,8 +550,8 @@ fun HomePage(navController: NavController) {
             // Refresh all health data
             bleViewModel.getHealthDetail()
             bleViewModel.getPower()
-            bleViewModel.getStepHistory(System.currentTimeMillis())
-            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
+//            bleViewModel.getStepHistory(System.currentTimeMillis())
+//            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
 
             // Wait for data to load
             delay(2000)
@@ -603,7 +603,9 @@ fun HomePage(navController: NavController) {
                 TopAppBar(
                     navigationIcon = {
                         IconButton(onClick = {
-                            viewModel.toInstructionList(navController)
+                            scope.launch {
+                                viewModel.toInstructionList(navController)
+                            }
                         }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }

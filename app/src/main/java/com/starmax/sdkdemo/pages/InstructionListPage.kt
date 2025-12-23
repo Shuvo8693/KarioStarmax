@@ -289,7 +289,7 @@ fun InstructionListPage(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Features List") },
+                    title = { Text("Kario Features") },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
@@ -357,7 +357,7 @@ fun SearchBar(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
-        placeholder = { Text("Search functions...") },
+        placeholder = { Text("Search Features...") },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null)
         },
@@ -635,6 +635,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getHeartRateHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }

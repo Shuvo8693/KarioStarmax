@@ -8,9 +8,7 @@ import androidx.navigation.NavController
 import com.starmax.sdkdemo.NavPage
 import org.koin.core.component.KoinComponent
 
-class HomeViewModel(
-
-) : ViewModel() , KoinComponent{
+class HomeViewModel() : ViewModel() , KoinComponent{
     var openNetDialog by mutableStateOf(false)
         private set
 

@@ -45,8 +45,8 @@ class MainActivity : AppCompatActivity() {
         RtkCore.initialize(this,configure)
         RtkDfu.initialize(this,true)
 
-        Log.v(TAG,"蓝牙SDK当前版本号:"+BleConstant.Version)
-        Log.v(TAG,"NetSDK当前版本号:"+NetConstant.Version)
+        Log.v(TAG,"Bluetooth SDK current version number:"+BleConstant.Version)
+        Log.v(TAG, "NetSDK current version number:"+NetConstant.Version)
 
         ActivityCompat.requestPermissions(
             this, arrayOf(
