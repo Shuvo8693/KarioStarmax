@@ -84,6 +84,7 @@ import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.internal.notify
 import org.json.JSONArray
 import org.json.JSONObject
 import org.koin.core.component.KoinComponent
@@ -1586,17 +1587,19 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.stepsList.forEach { data ->
-                    str +=
-                        "Time: ${data.hour}:${data.minute} " +
+                    if (data.steps != 0){
+                        str += "Time: ${data.hour}:${data.minute} " +
                                 "Steps: ${data.steps}, " +
                                 "Calories: ${(data.calorie.toDouble() / 1000)} kcal, " +
                                 "Distance: ${(data.distance.toDouble() / 10)} m\n"
+                    }
+
                 }
 
                 it.sleepsList.forEach { data ->
-                    str +=
-                        "Time: ${data.hour}:${data.minute} " +
-                                "Sleep status: ${data.sleepStatus}\n"
+                    if (data.sleepStatus != 0){
+                        str += "Time: ${data.hour}:${data.minute} " + "Sleep status: ${data.sleepStatus}\n"
+                    }
                 }
 
                 bleResponseLabel.value = str
@@ -1620,9 +1623,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    str +=
-                        "Time: ${data.hour}:${data.minute} " +
-                                "Systolic: ${data.ss} Diastolic: ${data.fz}\n"
+                    if (data.fz != 0 && data.ss != 0){
+                        str += "Time: ${data.hour}:${data.minute} " + "Systolic: ${data.ss} Diastolic: ${data.fz}\n"
+                    }
                 }
 
                 bleResponseLabel.value = str
@@ -1712,11 +1715,15 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.exerciseDataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Moderate/High intensity: ${data.value}\n"
+                    if (data.value!=0){
+                        str += "Time: ${data.hour}:${data.minute} Moderate/High intensity: ${data.value}\n"
+                    }
                 }
 
                 it.standDataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Standing: ${data.value}\n"
+                    if (data.value!=0){
+                        str += "Time: ${data.hour}:${data.minute} Standing: ${data.value}\n"
+                    }
                 }
 
                 bleResponseLabel.value = str
@@ -1738,7 +1745,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Blood oxygen: ${data.value}%\n"
+                    if (data.value!=0){
+                        str += "Time: ${data.hour}:${data.minute} Blood oxygen: ${data.value}%\n"
+                    }
+
                 }
 
                 bleResponseLabel.value = str
@@ -1760,7 +1770,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Respiration rate: ${data.value}%\n"
+                    if (data.value!=0){
+                        str += "Time: ${data.hour}:${data.minute} Respiration rate: ${data.value}%\n"
+                    }
+
                 }
 
                 bleResponseLabel.value = str
@@ -1770,10 +1783,15 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }, {}).let { sendDisposable.add(it) }
     }
 
+
+//===================== Stress / Pressure history ==================
     fun getPressureHistory(time: Long) {
         initData()
         changeMtu {
             val calendar = Calendar.getInstance().apply { timeInMillis = time }
+//            StarmaxBleClient.instance.getHeartRateControl().subscribe({
+//                it.notify()
+//            },{}).let { sendDisposable.add(it) }
 
             StarmaxBleClient.instance.getPressureHistory(calendar).subscribe({
                 if (it.status == 0) {
@@ -1783,9 +1801,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                 "Data length: ${it.dataLength}\n"
 
                     it.dataList.forEach { data ->
-                        str += "Time: ${data.hour}:${data.minute} Stress: ${data.value}%\n"
+                        if (data.value!=0){
+                            str += "Time: ${data.hour}:${data.minute} Stress: ${data.value} \n"  //Stress
+                        }
                     }
-
                     bleResponseLabel.value = str
                 } else {
                     bleResponseLabel.value = statusLabel(it.status)
@@ -1806,7 +1825,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { value ->
-                    str += "MET: $value\n"
+                    if (value!=0){
+                        str += "MET: $value\n"
+                    }
+
                 }
 
                 bleResponseLabel.value = str
@@ -1877,7 +1899,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value}%\n"
+                    if (data.value > 0){
+                        str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value}%\n"
+                    }
+
                 }
 
                 bleResponseLabel.value = str
@@ -1899,9 +1924,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { value ->
-                    str += "MAI: $value\n"
+                    if (value > 0){
+                        str += "MAI: $value\n"
+                    }
                 }
-
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
@@ -1909,7 +1935,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }, {}).let { sendDisposable.add(it) }
     }
 
-    fun getBloodSugarHistory(time: Long) {
+    fun getBloodSugarHistory( time: Long ) {
         initData()
         val calendar = Calendar.getInstance().apply { timeInMillis = time }
 
@@ -1921,7 +1947,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    str += "Time: ${data.hour}:${data.minute} Blood sugar: ${data.value}\n"
+                    if(data.value > 0){
+                        str += "Time: ${data.hour}:${data.minute} Blood sugar: ${data.value}\n"
+                    }
                 }
 
                 bleResponseLabel.value = str
@@ -1975,7 +2003,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if (data.status != 0) {
+                    if (data.status > 0) {
                         str += "Time: ${data.hour}:${data.minute} Status: ${data.status}\n"
                     }
                 }
@@ -2038,7 +2066,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getSupportLanguages().subscribe({
             if (it.status == 0) {
-                var str = ""
+                val str = ""
                 val languageList = listOf(
                     "Simplified Chinese",
                     "Traditional Chinese",
@@ -2821,7 +2849,6 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 val request = Request.Builder()
                     .url("https://www.runmefit.cn/api/firmware/unit_test")
                     .build()
-
                 try {
                     val response = client.newCall(request).execute()
                     if (response.isSuccessful) {
@@ -2837,7 +2864,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                 StarmaxBleClient.instance.deviceUnitTest(name, value, status)
                                     .subscribe({
                                         bleResponseLabel.value =
-                                            "Unit test: ${name}, Value: ${value}, Status: ${status}"
+                                            "Unit test: ${name}, Value: ${value}, Status: $status"
                                     }, {}).let {
                                         sendDisposable.add(it)
                                     }
@@ -3297,7 +3324,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             sendDisposable.add(it)
         }
     }
-
+ ///========================== UnPair Device =================
     fun unpair() {
         initData()
         StarmaxBleClient.instance.unpair(0).subscribe(
@@ -3323,7 +3350,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
             sendDisposable.add(it)
         }
     }
-
+   //=== Shutdown ====
     fun close() {
         initData()
         StarmaxBleClient.instance.close().subscribe({
@@ -3458,12 +3485,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         BluetoothAdapter.STATE_ON -> {
                             Log.e("BleReceiver", "onReceive---------Bluetooth is turned on")
                             // Optionally, you can reconnect to the device here
-                            // Handler(Looper.getMainLooper()).postDelayed({
-                            //     BleManager.getInstance().connect(
-                            //         bleViewModel.bleDevice?.get()?.mac,
-                            //         bleViewModel.bleGattCallback
-                            //     )
-                            // }, 1000)
+                             Handler(Looper.getMainLooper()).postDelayed({
+                                 BleManager.getInstance().connect(
+                                     bleViewModel.bleDevice?.get()?.mac,
+                                     bleViewModel.bleGattCallback
+                                 )
+                             }, 1000)
                         }
 
                         BluetoothAdapter.STATE_TURNING_OFF -> {
@@ -3583,3 +3610,5 @@ class BleViewModel() : ViewModel(), KoinComponent {
         context.unbindService(serviceConnection)
     }
 }
+
+

@@ -47,7 +47,7 @@ class InstructionListViewModel() : ViewModel() {
                 "Sync Blood Pressure Record",
                 "Sync Respiration Rate Record",
                 "Sync Blood Oxygen Record",
-                "Sync Pressure Record",
+                "Sync Stress Record",
                 "Sync MET Record",
                 "Sync Temperature Record",
                 "Sync MAI",

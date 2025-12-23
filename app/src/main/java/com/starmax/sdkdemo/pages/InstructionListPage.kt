@@ -656,6 +656,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getBloodPressureHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -665,6 +668,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getRespirationRateHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -674,15 +680,21 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getBloodOxygenHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
         },
-        InstructionItem("Sync Pressure Record", "Sync History") {
+        InstructionItem("Sync Stress Record", "Sync History") {
             activity?.let {
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getPressureHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -692,6 +704,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getMetHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -701,6 +716,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getTempHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -719,6 +737,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getBloodSugarHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -728,6 +749,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getSleepHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
