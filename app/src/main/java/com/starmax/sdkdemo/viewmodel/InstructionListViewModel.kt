@@ -41,7 +41,7 @@ class InstructionListViewModel() : ViewModel() {
 //                "Sifli App Download (Local)"
             ),
             "Sync" to listOf(
-                "Sync Head Shaking Record",
+//                "Sync Head Shaking Record",
                 "Sync Heart Rate Record",
 //                "Sync Standing Count Medium-High Intensity",
                 "Sync Blood Pressure Record",
@@ -53,14 +53,14 @@ class InstructionListViewModel() : ViewModel() {
                 "Sync MAI",
                 "Sync Blood Sugar",
                 "Sync Sleep Record",
-                "Sync Raw Sleep Data",
-                "Sync Step Count Valid Dates",
-                "Sync Sleep Valid Dates",
-                "Sync MET Valid Dates",
-                "Sync Mai Valid Dates",
-                "Sync Blood Sugar Valid Dates",
-                "Sync Blood Oxygen Valid Dates",
-                "Sync Head Shaking Valid Dates",
+//                "Sync Raw Sleep Data",
+//                "Sync Step Count Valid Dates",
+//                "Sync Sleep Valid Dates",
+//                "Sync MET Valid Dates",
+//                "Sync Mai Valid Dates",
+//                "Sync Blood Sugar Valid Dates",
+//                "Sync Blood Oxygen Valid Dates",
+//                "Sync Head Shaking Valid Dates",
                 "Sync Sport",
                 "Sync Sport Record",
 //                "Sync Step Count Sleep Record"
@@ -71,7 +71,7 @@ class InstructionListViewModel() : ViewModel() {
                 "Get Watch Mode",
 //                "Get NFC Card Info",
 //                "Get BT Status",
-                "Get Power",
+//                "Get Power",
                 "Get Version Info",
                 "Get Supported Languages",
                 "Get Time Zone",
@@ -93,8 +93,9 @@ class InstructionListViewModel() : ViewModel() {
                 "Get Sleep Plan",
                 "Jieli Log Get"
             ),
+
             "Settings" to listOf(
-                "Set Server",
+//                "Set Server",
                 "Set Status",
                 "Set Time Zone",
                 "Set Daylight Saving Time",

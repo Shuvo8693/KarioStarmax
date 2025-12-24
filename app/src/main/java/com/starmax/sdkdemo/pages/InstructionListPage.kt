@@ -626,6 +626,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getShakeHeadHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.HealthHistoryPage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -807,12 +810,21 @@ fun buildInstructionList(
         // ═══════════════════════════════════════════════════════
         InstructionItem("Get Drink Water Reminder", "Get Device Info") {
             bleViewModel.getDrinkWater()
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
         },
         InstructionItem("Get Sport Mode", "Get Device Info") {
             bleViewModel.getSportMode()
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
         },
         InstructionItem("Get Watch Mode", "Get Device Info") {
             homeViewModel.toggleCustomDeviceModeDialog()
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
         },
         InstructionItem("Get NFC Card Info", "Get Device Info") {
             bleViewModel.getNfcCardInfo()
@@ -825,6 +837,9 @@ fun buildInstructionList(
         },
         InstructionItem("Get Version Info", "Get Device Info") {
             bleViewModel.getVersion(true)
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
         },
         InstructionItem("Get Supported Languages", "Get Device Info") {
             bleViewModel.getSupportLanguages()

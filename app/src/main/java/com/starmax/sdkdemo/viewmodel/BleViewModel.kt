@@ -968,7 +968,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getDrinkWater().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = it.toString()
+                bleResponseLabel.value = "Start hr ${it.startHour}: Start Min ${it.startMinute} \n End hr ${it.endHour}: End Min ${it.endMinute}"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1770,7 +1770,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if (data.value!=0){
+                    if (data.value>0){
                         str += "Time: ${data.hour}:${data.minute} Respiration rate: ${data.value}%\n"
                     }
 
@@ -1900,7 +1900,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
                 it.dataList.forEach { data ->
                     if (data.value > 0){
-                        str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value}%\n"
+                        str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value/10.0}\u00B0 C \n"
                     }
 
                 }
@@ -2436,6 +2436,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     fun sendCustomDialV2Local(context: Context) {
         initData()
         lcdWidth = 410
