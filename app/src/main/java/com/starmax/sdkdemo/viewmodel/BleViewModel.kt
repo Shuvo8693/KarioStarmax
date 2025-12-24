@@ -1366,7 +1366,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
-        }, {})
+        }, {
+
+        }).let { sendDisposable.add(it) }
     }
 
     fun getSportMode() {

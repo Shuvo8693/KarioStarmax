@@ -823,7 +823,7 @@ fun buildInstructionList(
         InstructionItem("Get Watch Mode", "Get Device Info") {
             homeViewModel.toggleCustomDeviceModeDialog()
             scope.launch {
-                navController.navigate(NavPage.HealthHistoryPage.name)
+                navController.navigate(NavPage.DevicePage.name)
             }
         },
         InstructionItem("Get NFC Card Info", "Get Device Info") {
@@ -838,14 +838,20 @@ fun buildInstructionList(
         InstructionItem("Get Version Info", "Get Device Info") {
             bleViewModel.getVersion(true)
             scope.launch {
-                navController.navigate(NavPage.HealthHistoryPage.name)
+                navController.navigate(NavPage.DevicePage.name)
             }
         },
         InstructionItem("Get Supported Languages", "Get Device Info") {
             bleViewModel.getSupportLanguages()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Time Zone", "Get Device Info") {
             bleViewModel.getTimeOffset()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Daylight Saving Time", "Get Device Info") {
             bleViewModel.getSummerWorldClock()
@@ -855,81 +861,146 @@ fun buildInstructionList(
         },
         InstructionItem("Get Watch Daily Data", "Get Device Info") {
             bleViewModel.getCustomDeviceDailyData()
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
         },
         InstructionItem("Get Watch Vibration Duration", "Get Device Info") {
             homeViewModel.toggleCustomDeviceShakeTimeDialog()
         },
         InstructionItem("Get Watch Name", "Get Device Info") {
-            homeViewModel.toggleCustomDeviceNameDialog()
+            bleViewModel.bleResponseLabel.value =  bleViewModel.bleDevice?.get()?.name.toString()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Shake Times", "Get Device Info") {
             bleViewModel.getCustomDeviceShakeTimes()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Shake On/Off Switch", "Get Device Info") {
             homeViewModel.toggleCustomDeviceShakeOnOffDialog()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Broadcast Interval", "Get Device Info") {
             homeViewModel.toggleCustomBroadcastDialog()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get File System", "Get Device Info") {
             homeViewModel.toggleFileSystemOpen()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Dial Info", "Get Device Info") {
             bleViewModel.bleDevice?.get()?.let { bleViewModel.getDialInfo() }
         },
         InstructionItem("Get Alarm Clock", "Get Device Info") {
             bleViewModel.getClock()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Get Log", "Get Device Info") {
-            bleViewModel.bleDevice?.get()?.let { bleViewModel.getLog() }
+            bleViewModel.bleDevice?.get()?.let {
+                bleViewModel.getLog()
+                scope.launch {
+                    navController.navigate(NavPage.DevicePage.name)
+                }
+            }
         },
         // ═══════════════════════════════════════════════════════
         // SET DEVICE SETTINGS
         // ═══════════════════════════════════════════════════════
         InstructionItem("Set Server", "Set Device Settings") {
             homeViewModel.toggleSetNet()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Status", "Set Device Settings") {
             homeViewModel.toggleSetState()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Time Zone", "Set Device Settings") {
             bleViewModel.setTimeOffset()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Daylight Saving Time", "Set Device Settings") {
             bleViewModel.setSummerWorldClock()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set User Info", "Set Device Settings") {
             homeViewModel.toggleUserInfo()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Daily Goal", "Set Device Settings") {
             homeViewModel.toggleGoals()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Frequent Contacts", "Set Device Settings") {
             homeViewModel.toggleContactOpen()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Emergency Contacts", "Set Device Settings") {
             homeViewModel.toggleSosOpen()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Do Not Disturb", "Set Device Settings") {
             homeViewModel.toggleNotDisturbOpen()
         },
         InstructionItem("Set Sleep Plan", "Set Device Settings") {
             bleViewModel.setSleepClock()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Sport Mode", "Set Device Settings") {
             bleViewModel.setSportMode()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Password", "Set Device Settings") {
             homeViewModel.togglePasswordOpen()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Female Health", "Set Device Settings") {
             homeViewModel.toggleFemaleHealthOpen()
         },
         InstructionItem("Set Sedentary Reminder", "Set Device Settings") {
             bleViewModel.setLongSit()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Set Drink Water Reminder", "Set Device Settings") {
             bleViewModel.setDrinkWater()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
 
         // ═══════════════════════════════════════════════════════

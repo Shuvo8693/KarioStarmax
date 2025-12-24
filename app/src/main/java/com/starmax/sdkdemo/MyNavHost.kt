@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.starmax.sdkdemo.pages.CustomHealthGoalTasksPage
 import com.starmax.sdkdemo.pages.CustomHealthGoalsPage
+import com.starmax.sdkdemo.pages.DevicePage
 import com.starmax.sdkdemo.pages.EventReminderPage
 import com.starmax.sdkdemo.pages.GoalsDayAndNightPage
 import com.starmax.sdkdemo.pages.GoalsNotUpPage
@@ -32,7 +33,8 @@ enum class NavPage {
     InstructionListPage,
     EventReminderPage,
     Gts10PairPage,
-    HealthHistoryPage
+    HealthHistoryPage,
+    DevicePage
 }
 
 val LocalNavController = staticCompositionLocalOf<NavHostController> {
@@ -86,6 +88,9 @@ fun MyNavHost(navController: NavHostController) {
         }
         composable(NavPage.HealthHistoryPage.name){
             HealthHistoryPage(navController)
+        }
+        composable(NavPage.DevicePage.name){
+            DevicePage(navController)
         }
     }
 }
