@@ -51,7 +51,7 @@ class UserInfoViewModel(
                 handWear
             ).subscribe({
                 viewModelScope.launch {
-                    Toast.makeText(context, "设置用户信息成功", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Set user information successfully", Toast.LENGTH_SHORT).show()
                 }
             }, {
 
@@ -64,7 +64,7 @@ class UserInfoViewModel(
                 weight,
             ).subscribe({
                 viewModelScope.launch {
-                    Toast.makeText(context, "设置用户信息成功", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,  "Set user information successfully", Toast.LENGTH_SHORT).show()
                 }
             }, {
 

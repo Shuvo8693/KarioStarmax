@@ -827,6 +827,12 @@ fun buildInstructionList(
                 navController.navigate(NavPage.HealthHistoryPage.name)
             }
         },
+        InstructionItem("Get User Info", "Get Device Info") {
+            bleViewModel.getUserInfo()
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
+        },
         InstructionItem("Get Watch Mode", "Get Device Info") {
             homeViewModel.toggleCustomDeviceModeDialog()
             scope.launch {

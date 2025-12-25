@@ -510,17 +510,14 @@ fun HomePage(navController: NavController) {
     // ═══════════════════════════════════════════════════════
     // ✅ RE-FETCH DATA WHEN CONNECTION STATE CHANGES
     // ═══════════════════════════════════════════════════════
-/*    LaunchedEffect(bleViewModel.bleState) {
+    LaunchedEffect(Unit) {
         if(bleViewModel.bleState == BleState.CONNECTED){
             delay(1000)
             bleViewModel.getHealthDetail()
             bleViewModel.getPower()
-            bleViewModel.getStepHistory(System.currentTimeMillis())
-            print(bleViewModel.bleHealthResponseLabel.value)
-            print(bleViewModel.bleBatteryResponseLabel.value)
-
+            bleViewModel.getPressureHistory(time = System.currentTimeMillis() )
         }
-    }*/
+    }
 
 /*    LaunchedEffect( bleViewModel.bleDevice) {
         val bleDevice = bleViewModel.bleDevice

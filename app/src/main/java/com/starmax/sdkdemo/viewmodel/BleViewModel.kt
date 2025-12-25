@@ -237,7 +237,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
             if (gatt?.getService(NotifyServiceUUID) == null) {
                 Handler(Looper.getMainLooper()).postDelayed({
-                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+                    if (ActivityCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        ) != PackageManager.PERMISSION_GRANTED
                     ) {
                         gatt?.discoverServices()
                     }
@@ -312,7 +315,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun connect(newBleDevice: BleDevice?) {
         bleDevice = SoftReference(newBleDevice)
         if (bleDevice != null) {
-            BleManager.getInstance().connect(bleDevice!!.get(), bleGattCallback) // todo: Get ble device info then connect with bleGattCallback
+            BleManager.getInstance().connect(
+                bleDevice!!.get(),
+                bleGattCallback
+            ) // todo: Get ble device info then connect with bleGattCallback
         }
     }
 
@@ -354,35 +360,36 @@ class BleViewModel() : ViewModel(), KoinComponent {
     }
 
     fun openNotify(newBleDevice: BleDevice?) {
-        BleManager.getInstance().notify( // ============== open ble notify (data is received from ble notify)
-            newBleDevice,
-            NotifyServiceUUID.toString(),
-            NotifyCharacteristicUUID.toString(),
-            object : BleNotifyCallback() {
+        BleManager.getInstance()
+            .notify( // ============== open ble notify (data is received from ble notify)
+                newBleDevice,
+                NotifyServiceUUID.toString(),
+                NotifyCharacteristicUUID.toString(),
+                object : BleNotifyCallback() {
 
-                @RequiresApi(Build.VERSION_CODES.O)
-                @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-                override fun onNotifySuccess() {
-                    bleMessage.value = "Notify opened successfully"
-                    bleGatt?.get()?.setPreferredPhy(
-                        BluetoothDevice.PHY_LE_2M,
-                        BluetoothDevice.PHY_LE_2M,
-                        BluetoothDevice.PHY_OPTION_NO_PREFERRED
-                    )
-                    handleOpenSuccess()
-                }
+                    @RequiresApi(Build.VERSION_CODES.O)
+                    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+                    override fun onNotifySuccess() {
+                        bleMessage.value = "Notify opened successfully"
+                        bleGatt?.get()?.setPreferredPhy(
+                            BluetoothDevice.PHY_LE_2M,
+                            BluetoothDevice.PHY_LE_2M,
+                            BluetoothDevice.PHY_OPTION_NO_PREFERRED
+                        )
+                        handleOpenSuccess()
+                    }
 
-                override fun onNotifyFailure(exception: BleException) {
-                    bleMessage.value = "Failed to open notify: $exception"
-                }
+                    override fun onNotifyFailure(exception: BleException) {
+                        bleMessage.value = "Failed to open notify: $exception"
+                    }
 
-                @SuppressLint("MissingPermission", "NewApi")
-                override fun onCharacteristicChanged(data: ByteArray) {
-                    // Data received from BLE notify
-                    println(StarmaxBleClient.instance.notify(data))  //todo ===== here byte data is received from Ble notify
+                    @SuppressLint("MissingPermission", "NewApi")
+                    override fun onCharacteristicChanged(data: ByteArray) {
+                        // Data received from BLE notify
+                        println(StarmaxBleClient.instance.notify(data))  //todo ===== here byte data is received from Ble notify
+                    }
                 }
-            }
-        )
+            )
     }
 
 
@@ -394,8 +401,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
             StarmaxBleClient.instance.notifyStream().takeUntil(disconnectSubject).subscribe(
                 {
                     if (it.data is Notify.StepHistory) {
-                        originData.value = it.byteArray.asList().drop(7).chunked(12).joinToString("\n") { byteArray ->
-                            byteArray.map { byte -> String.format("%02X", byte) }.toString()
+                        originData.value = it.byteArray.asList().drop(7).chunked(12)
+                            .joinToString("\n") { byteArray ->
+                                byteArray.map { byte -> String.format("%02X", byte) }.toString()
                             }
                         print(originData.value)
                     } else if (it.data is Notify.OriginSleepHistory) {
@@ -414,7 +422,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             }.joinToString("\n")
                         print(originData.value)
                     } else {
-                        originData.value = it.byteArray.map { String.format("%02X", it) }.toString()  //todo === decimal integer to 2 digit hexadecimal integer =====
+                        originData.value = it.byteArray.map { String.format("%02X", it) }
+                            .toString()  //todo === decimal integer to 2 digit hexadecimal integer =====
                         print(originData.value)
                     }
                     //bleResponse.value = it.data.toString()
@@ -447,7 +456,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                     localBasePath,
                                     it.byteArray.drop(7).map {
                                         String.format(
-                                            "0x%02X", it)
+                                            "0x%02X", it
+                                        )
                                     }.chunked(40).joinToString(",\n") {
                                         it.joinToString(",")
                                     } + ",\n\n\n",
@@ -503,29 +513,29 @@ class BleViewModel() : ViewModel(), KoinComponent {
             ).let {}
 
             StarmaxBleClient.instance.realTimeDataStream().takeUntil(disconnectSubject).subscribe({
-                    bleResponse.value = JSONObject(
-                        mapOf(
-                            "gsensor_list" to it.gensorsList.map {
-                                hashMapOf(
-                                    "x" to it.x,
-                                    "y" to it.y,
-                                    "z" to it.z,
-                                )
-                            }.toMutableList(),
-                            "steps" to it.steps,
-                            "calore" to it.calore,
-                            "distance" to it.distance,
-                            "heart_rate" to it.heartRate,
-                            "blood_pressure_ss" to it.bloodPressureSs,
-                            "blood_pressure_fz" to it.bloodPressureFz,
-                            "blood_oxygen" to it.bloodOxygen,
-                            "temp" to it.temp,
-                            "blood_sugar" to it.bloodSugar
-                        )
-                    ).toString()
-                }, {
+                bleResponse.value = JSONObject(
+                    mapOf(
+                        "gsensor_list" to it.gensorsList.map {
+                            hashMapOf(
+                                "x" to it.x,
+                                "y" to it.y,
+                                "z" to it.z,
+                            )
+                        }.toMutableList(),
+                        "steps" to it.steps,
+                        "calore" to it.calore,
+                        "distance" to it.distance,
+                        "heart_rate" to it.heartRate,
+                        "blood_pressure_ss" to it.bloodPressureSs,
+                        "blood_pressure_fz" to it.bloodPressureFz,
+                        "blood_oxygen" to it.bloodOxygen,
+                        "temp" to it.temp,
+                        "blood_sugar" to it.bloodSugar
+                    )
+                ).toString()
+            }, {
 
-                }).let { }
+            }).let { }
 
             StarmaxBleClient.instance.sportSyncFromDeviceStream().takeUntil(disconnectSubject)
                 .subscribe({
@@ -715,11 +725,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         Utils.p(StarmaxSend().getBtStatus())
 
-        StarmaxBleClient.instance.getBtStatus().subscribe({ bleResponseLabel.value = "BT status: " + it.btStatus }, {
+        StarmaxBleClient.instance.getBtStatus()
+            .subscribe({ bleResponseLabel.value = "BT status: " + it.btStatus }, {
 
-        }).let {
-            sendDisposable.add(it)
-        }
+            }).let {
+                sendDisposable.add(it)
+            }
     }
 
     fun findDevice(isFind: Boolean) {
@@ -735,7 +746,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun getPower() {
         initData()
         StarmaxBleClient.instance.getPower().subscribe({
-            bleBatteryResponseLabel.value = ("Battery level: ${it.power}%\n" + "Charging: ${it.isCharge}")
+            bleBatteryResponseLabel.value =
+                ("Battery level: ${it.power}%\n" + "Charging: ${it.isCharge}")
         }, {
 
         }).let {
@@ -849,39 +861,47 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.getHealthDetail().subscribe({
 
             if (it.status == 0) {
-              /*  bleResponseLabel.value = (
-                        "Total step count:${it.totalSteps}\n"
-                                + "Total calories (Cal):${it.totalHeat}\n"
-                                + "Total distance (m):${it.totalDistance}\n"
-                                + "Total sleep duration (minutes):${it.totalSleep}\n"
-                                + "Deep sleep duration:${it.totalDeepSleep}\n"
-                                + "Light sleep duration:${it.totalLightSleep}\n"
-                                + "Current heart rate:${it.currentHeartRate}\n"
-                                + "Current blood pressure:${it.currentSs} /${it.currentFz}\n"
-                                + "Current blood oxygen:${it.currentBloodOxygen}\n"
-                                + "Current pressure:${it.currentPressure}\n"
-                                + "Current MAI:${it.currentMai}\n"
-                                + "Current MET:${it.currentMet}\n"
-                                + "Current temperature:${it.currentTemp}\n"
-                                + "Current blood sugar:${it.currentBloodSugar}\n"
-                                + "Is worn:${it.isWear}\n"
-                                + "Respiration rate:${it.respirationRate}\n"
-                                + "Shake head:${it.shakeHead}"
-                        )*/
+                /*  bleResponseLabel.value = (
+                          "Total step count:${it.totalSteps}\n"
+                                  + "Total calories (Cal):${it.totalHeat}\n"
+                                  + "Total distance (m):${it.totalDistance}\n"
+                                  + "Total sleep duration (minutes):${it.totalSleep}\n"
+                                  + "Deep sleep duration:${it.totalDeepSleep}\n"
+                                  + "Light sleep duration:${it.totalLightSleep}\n"
+                                  + "Current heart rate:${it.currentHeartRate}\n"
+                                  + "Current blood pressure:${it.currentSs} /${it.currentFz}\n"
+                                  + "Current blood oxygen:${it.currentBloodOxygen}\n"
+                                  + "Current pressure:${it.currentPressure}\n"
+                                  + "Current MAI:${it.currentMai}\n"
+                                  + "Current MET:${it.currentMet}\n"
+                                  + "Current temperature:${it.currentTemp}\n"
+                                  + "Current blood sugar:${it.currentBloodSugar}\n"
+                                  + "Is worn:${it.isWear}\n"
+                                  + "Respiration rate:${it.respirationRate}\n"
+                                  + "Shake head:${it.shakeHead}"
+                          )*/
                 val healthData = mapOf(
                     "Total step count" to it.totalSteps,
-                    "Total calories (Cal)" to String.format(java.util.Locale.US,"%.2f",(it.totalHeat / 1000.0 ))  ,
-                    "Total distance (m)" to String.format( java.util.Locale.US,"%.3f",it.totalDistance / 1609.34), //meter unit is converted to miles (1 mile = 1609.34 meter)
+                    "Total calories (Cal)" to String.format(
+                        java.util.Locale.US,
+                        "%.2f",
+                        (it.totalHeat / 1000.0)
+                    ),
+                    "Total distance (m)" to String.format(
+                        java.util.Locale.US,
+                        "%.3f",
+                        it.totalDistance / 1609.34
+                    ), //meter unit is converted to miles (1 mile = 1609.34 meter)
                     "Total sleep duration (minutes)" to it.totalSleep,
                     "Deep sleep duration" to it.totalDeepSleep,
                     "Light sleep duration" to it.totalLightSleep,
-                    "Current heart rate" to "${ it.currentHeartRate } bpm",
+                    "Current heart rate" to "${it.currentHeartRate} bpm",
                     "Current blood pressure" to "${it.currentSs}/${it.currentFz} mmHg",
                     "Current blood oxygen" to "${it.currentBloodOxygen}%",
                     "Current pressure" to it.currentPressure,
                     "Current MAI" to it.currentMai,
                     "Current MET" to it.currentMet,
-                    "Current temperature" to "${(it.currentTemp/10.0)}\u00B0 C",
+                    "Current temperature" to "${(it.currentTemp / 10.0)}\u00B0 C",
                     "Current blood sugar" to it.currentBloodSugar / 10.0,
                     "Is worn" to it.isWear,
                     "Respiration rate" to it.respirationRate,
@@ -970,7 +990,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getDrinkWater().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "Start hr ${it.startHour}: Start Min ${it.startMinute} \n End hr ${it.endHour}: End Min ${it.endMinute}"
+                bleResponseLabel.value =
+                    "Start hr ${it.startHour}: Start Min ${it.startMinute} \n End hr ${it.endHour}: End Min ${it.endMinute}"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1407,6 +1428,27 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }
     }
 
+    fun getUserInfo() {
+        initData()
+        StarmaxBleClient.instance.getUserInfo().subscribe({
+            if (it.status == 0) {
+                val str = """
+             👤 Sex: ${if (it.sex == 1) "Male" else "Female"}
+             🎂 Age: ${it.age} years old
+             📏 Height: ${it.height} cm
+             ⚖️ Weight: ${it.weight} kg
+             ⌚ Wearing: ${if (it.handWear == 0) "Left Hand" else "Right Hand"} """.trimIndent()
+                bleResponseLabel.value = str
+            } else {
+                bleResponseLabel.value = statusLabel(it.status)
+            }
+        }, {
+
+        }).let {
+            sendDisposable.add(it)
+        }
+    }
+
     fun setDisplayMode(isDisplay: Boolean) {
         initData()
         StarmaxBleClient.instance.setDisplayMode(isDisplay).subscribe({
@@ -1584,7 +1626,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getSportHistory().subscribe({
             if (it.status == 0) {
-                val jsonValue = SportHistoryFactory(StarmaxBleClient.instance.bleNotify).buildMapFromProtobuf(it).toJson()
+                val jsonValue =
+                    SportHistoryFactory(StarmaxBleClient.instance.bleNotify).buildMapFromProtobuf(it)
+                        .toJson()
                 bleResponseLabel.value = jsonValue
                 blesSportsResponseLabel.value = jsonValue
             } else {
@@ -1602,11 +1646,11 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.getStepHistory(calendar).subscribe({
             if (it.status == 0) {
                 var str = "Sampling interval: ${it.interval} minutes\n" +
-                            "Date: ${it.year}-${it.month}-${it.day}\n" +
-                            "Data length: ${it.dataLength}\n"
+                        "Date: ${it.year}-${it.month}-${it.day}\n" +
+                        "Data length: ${it.dataLength}\n"
 
                 it.stepsList.forEach { data ->
-                    if (data.steps != 0){
+                    if (data.steps != 0) {
                         str += "Time: ${data.hour}:${data.minute} " +
                                 "Steps: ${data.steps}, " +
                                 "Calories: ${(data.calorie.toDouble() / 1000)} kcal, " +
@@ -1616,7 +1660,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 }
 
                 it.sleepsList.forEach { data ->
-                    if (data.sleepStatus != 0){
+                    if (data.sleepStatus != 0) {
                         str += "Time: ${data.hour}:${data.minute} " + "Sleep status: ${data.sleepStatus}\n"
                     }
                 }
@@ -1642,7 +1686,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if (data.fz != 0 && data.ss != 0){
+                    if (data.fz != 0 && data.ss != 0) {
                         str += "Time: ${data.hour}:${data.minute} " + "Systolic: ${data.ss} Diastolic: ${data.fz}\n"
                     }
                 }
@@ -1710,7 +1754,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if(data.value!=0){
+                    if (data.value != 0) {
                         str += "Time: ${data.hour}:${data.minute} Heart rate: ${data.value} bpm\n"
                     }
                 }
@@ -1734,13 +1778,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.exerciseDataList.forEach { data ->
-                    if (data.value!=0){
+                    if (data.value != 0) {
                         str += "Time: ${data.hour}:${data.minute} Moderate/High intensity: ${data.value}\n"
                     }
                 }
 
                 it.standDataList.forEach { data ->
-                    if (data.value!=0){
+                    if (data.value != 0) {
                         str += "Time: ${data.hour}:${data.minute} Standing: ${data.value}\n"
                     }
                 }
@@ -1764,7 +1808,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if (data.value!=0){
+                    if (data.value != 0) {
                         str += "Time: ${data.hour}:${data.minute} Blood oxygen: ${data.value}%\n"
                     }
 
@@ -1789,7 +1833,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if (data.value>0){
+                    if (data.value > 0) {
                         str += "Time: ${data.hour}:${data.minute} Respiration rate: ${data.value}%\n"
                     }
 
@@ -1803,7 +1847,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     }
 
 
-//===================== Stress / Pressure history ==================
+    //===================== Stress / Pressure history ==================
     fun getPressureHistory(time: Long) {
         initData()
         changeMtu {
@@ -1820,12 +1864,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                 "Data length: ${it.dataLength}\n"
 
                     it.dataList.forEach { data ->
-                        if (data.value!=0){
+                        if (data.value != 0) {
                             str += "Time: ${data.hour}:${data.minute} Stress: ${data.value} \n"  //Stress
                         }
                     }
                     bleResponseLabel.value = str
-                   val stressLastValue = it.dataList.lastOrNull { data -> data.value > 0 }
+                    val stressLastValue = it.dataList.lastOrNull { data -> data.value > 0 }
                     bleStressResponseLabel.value = stressLastValue?.value.toString()
 
                 } else {
@@ -1847,7 +1891,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { value ->
-                    if (value!=0){
+                    if (value != 0) {
                         str += "MET: $value\n"
                     }
 
@@ -1921,8 +1965,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if (data.value > 0){
-                        str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value/10.0}\u00B0 C \n"
+                    if (data.value > 0) {
+                        str += "Time: ${data.hour}:${data.minute} Temperature: ${data.value / 10.0}\u00B0 C \n"
                     }
 
                 }
@@ -1946,7 +1990,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { value ->
-                    if (value > 0){
+                    if (value > 0) {
                         str += "MAI: $value\n"
                     }
                 }
@@ -1957,7 +2001,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         }, {}).let { sendDisposable.add(it) }
     }
 
-    fun getBloodSugarHistory( time: Long ) {
+    fun getBloodSugarHistory(time: Long) {
         initData()
         val calendar = Calendar.getInstance().apply { timeInMillis = time }
 
@@ -1969,7 +2013,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             "Data length: ${it.dataLength}\n"
 
                 it.dataList.forEach { data ->
-                    if(data.value > 0){
+                    if (data.value > 0) {
                         str += "Time: ${data.hour}:${data.minute} Blood sugar: ${data.value}\n"
                     }
                 }
@@ -2319,7 +2363,10 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                                         override fun onFailure(status: Int) {}
                                                         override fun onStart() {
                                                             val data = StarmaxSend()
-                                                                .sendUi(offset = ui.offset, ui.version)
+                                                                .sendUi(
+                                                                    offset = ui.offset,
+                                                                    ui.version
+                                                                )
                                                             sendMsg(data)
                                                         }
 
@@ -2562,14 +2609,19 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 if ((it["relative_path"] as String).contains("ezip/0000.bin")) {
                     val currentFile = it["current_file"] as File
                     var srcBitmap = BitmapFactory.decodeStream(img)
-                    srcBitmap = com.starmax.sdkdemo.utils.BmpUtils.convertSize(srcBitmap, lcdWidth, lcdHeight)
+                    srcBitmap = com.starmax.sdkdemo.utils.BmpUtils.convertSize(
+                        srcBitmap,
+                        lcdWidth,
+                        lcdHeight
+                    )
 
                     val outputStream = ByteArrayOutputStream()
                     // Write Bitmap into PNG format
                     srcBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
 
                     Log.d("pngData", "${FileValidator.isPngData(outputStream.toByteArray())}")
-                    val bmpCopy = sifliEzipUtil.pngToEzip(outputStream.toByteArray(), "rgb565A", 0, 1, 2)
+                    val bmpCopy =
+                        sifliEzipUtil.pngToEzip(outputStream.toByteArray(), "rgb565A", 0, 1, 2)
                     Log.d("pngDataZip", "${bmpCopy.size}")
 
                     FileOutputStream(currentFile).use { fos ->
@@ -2590,7 +2642,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     println(currentFile.absolutePath)
                     val bytes = FileUtils.inputStream2Bytes(FileInputStream(currentFile))
                     if (bytes != null) {
-                        val newBytes = com.starmax.sdkdemo.utils.BmpUtils.argbConvertColor(bytes, 0xFF, 0x00, 0x00)
+                        val newBytes = com.starmax.sdkdemo.utils.BmpUtils.argbConvertColor(
+                            bytes,
+                            0xFF,
+                            0x00,
+                            0x00
+                        )
                         FileOutputStream(currentFile).use { fos ->
                             fos.write(newBytes)
                             fos.flush()
@@ -3129,7 +3186,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                             val currentCalendar = Calendar.getInstance()
                             val diffInSeconds: Long =
                                 (currentCalendar.timeInMillis - lastSendCalendar.timeInMillis) / 1000
-                            bleMessage.value = "Progress: ${progress.toInt()}%, Time elapsed: ${diffInSeconds}s"
+                            bleMessage.value =
+                                "Progress: ${progress.toInt()}%, Time elapsed: ${diffInSeconds}s"
                         }
 
                         override fun onFailure(status: Int) {
@@ -3139,7 +3197,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         override fun onCheckSum() {
                             val data = StarmaxSend().sendDiffCheckSum()
                             Log.d("Diff Sender", "${BleFileSender.checksumData.size}")
-                            bleMessage.value = "Sending checksum packet ${BleFileSender.checksumSendIndex}"
+                            bleMessage.value =
+                                "Sending checksum packet ${BleFileSender.checksumSendIndex}"
                             sendMsg(data)
                         }
 
@@ -3193,7 +3252,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         val currentCalendar = Calendar.getInstance()
                         val diffInSeconds: Long =
                             (currentCalendar.timeInMillis - lastSendCalendar.timeInMillis) / 1000
-                        bleMessage.value = "Progress: ${progress.toInt()}%, Time elapsed: ${diffInSeconds}s"
+                        bleMessage.value =
+                            "Progress: ${progress.toInt()}%, Time elapsed: ${diffInSeconds}s"
                     }
 
                     override fun onFailure(status: Int) {
@@ -3202,9 +3262,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
                     override fun onCheckSum() {
                         val data = StarmaxSend().sendDiffCheckSum()
-                        Log.d("Diff Sender", "Sending checksum packet ${BleFileSender.checksumSendIndex}")
+                        Log.d(
+                            "Diff Sender",
+                            "Sending checksum packet ${BleFileSender.checksumSendIndex}"
+                        )
                         Log.d("Diff Sender", "Checksum size: ${BleFileSender.checksumData.size}")
-                        bleMessage.value = "Sending checksum packet ${BleFileSender.checksumSendIndex}"
+                        bleMessage.value =
+                            "Sending checksum packet ${BleFileSender.checksumSendIndex}"
                         Log.d("Diff Sender", "Data size: ${data.size}")
                         Utils.p(data)
                         StarmaxBleClient.instance.notify(
@@ -3272,7 +3336,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         override fun onFailure(status: Int) {}
 
                         override fun onStart() {
-                            val data = StarmaxSend().sendDial(5001, BmpUtils.bmp24to16(255, 255, 255), 1)
+                            val data =
+                                StarmaxSend().sendDial(5001, BmpUtils.bmp24to16(255, 255, 255), 1)
                             Utils.p(data)
                             sendMsg(data)
                         }
@@ -3290,11 +3355,19 @@ class BleViewModel() : ViewModel(), KoinComponent {
                                     WriteCharacteristicUUID.toString(),
                                     data,
                                     object : BleWriteCallback() {
-                                        override fun onWriteSuccess(current: Int, total: Int, justWrite: ByteArray?) {
+                                        override fun onWriteSuccess(
+                                            current: Int,
+                                            total: Int,
+                                            justWrite: ByteArray?
+                                        ) {
                                             if (current == total) {
                                                 val newSendCalendar = Calendar.getInstance()
-                                                val millis = newSendCalendar.timeInMillis - lastSendCalendar.timeInMillis
-                                                Log.e("BleFileSender", "Send time: ${millis}ms, current RSSI:")
+                                                val millis =
+                                                    newSendCalendar.timeInMillis - lastSendCalendar.timeInMillis
+                                                Log.e(
+                                                    "BleFileSender",
+                                                    "Send time: ${millis}ms, current RSSI:"
+                                                )
                                                 lastSendCalendar = Calendar.getInstance()
                                             }
                                         }
@@ -3347,7 +3420,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
             sendDisposable.add(it)
         }
     }
- ///========================== UnPair Device =================
+
+    ///========================== UnPair Device =================
     fun unpair() {
         initData()
         StarmaxBleClient.instance.unpair(0).subscribe(
@@ -3373,7 +3447,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
             sendDisposable.add(it)
         }
     }
-   //=== Shutdown ====
+
+    //=== Shutdown ====
     fun close() {
         initData()
         StarmaxBleClient.instance.close().subscribe({
@@ -3417,7 +3492,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
      *======================== Send a BLE message =================================
      */
     fun sendMsg(data: ByteArray?) {
-        if (bleDevice == null || bleDevice!!.get() == null || !BleManager.getInstance().isConnected(bleDevice!!.get())
+        if (bleDevice == null || bleDevice!!.get() == null || !BleManager.getInstance()
+                .isConnected(bleDevice!!.get())
         ) {
             sendDisposable.clear() // Clear sending queue
             viewModelScope.launch {
@@ -3508,12 +3584,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         BluetoothAdapter.STATE_ON -> {
                             Log.e("BleReceiver", "onReceive---------Bluetooth is turned on")
                             // Optionally, you can reconnect to the device here
-                             Handler(Looper.getMainLooper()).postDelayed({
-                                 BleManager.getInstance().connect(
-                                     bleViewModel.bleDevice?.get()?.mac,
-                                     bleViewModel.bleGattCallback
-                                 )
-                             }, 1000)
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                BleManager.getInstance().connect(
+                                    bleViewModel.bleDevice?.get()?.mac,
+                                    bleViewModel.bleGattCallback
+                                )
+                            }, 1000)
                         }
 
                         BluetoothAdapter.STATE_TURNING_OFF -> {
@@ -3563,10 +3639,16 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
             ) {
                 result = createBind(bluetoothDevice, BluetoothDevice.TRANSPORT_BREDR)
-                Log.e("BleViewModel", "Dual-mode Bluetooth bind " + if (result) "successful" else "failed")
+                Log.e(
+                    "BleViewModel",
+                    "Dual-mode Bluetooth bind " + if (result) "successful" else "failed"
+                )
             } else if (bluetoothDevice.type == BluetoothDevice.DEVICE_TYPE_LE) {
                 result = createBind(bluetoothDevice)
-                Log.e("BleViewModel", "Classic Bluetooth bind " + if (result) "successful" else "failed")
+                Log.e(
+                    "BleViewModel",
+                    "Classic Bluetooth bind " + if (result) "successful" else "failed"
+                )
             }
         }
 

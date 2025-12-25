@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.starmax.sdkdemo.pages.lazyKoinViewModel
+import com.starmax.sdkdemo.viewmodel.BleViewModel
 import com.starmax.sdkdemo.viewmodel.HomeViewModel
 import com.starmax.sdkdemo.viewmodel.UserInfoViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -21,16 +22,17 @@ import org.koin.androidx.compose.koinViewModel
 fun SetUserInfoDialog() {
     val viewModel: UserInfoViewModel = koinViewModel()
     val homeViewModel: HomeViewModel by lazyKoinViewModel()
+    val bleViewModel: BleViewModel by lazyKoinViewModel()
 
     LaunchedEffect(Unit) {
         viewModel.getData()
     }
 
-    SetUserInfoDialogView(homeViewModel = homeViewModel, viewModel = viewModel)
+    SetUserInfoDialogView(homeViewModel = homeViewModel, viewModel = viewModel, bleViewModel = bleViewModel)
 }
 
 @Composable
-fun SetUserInfoDialogView(homeViewModel: HomeViewModel, viewModel: UserInfoViewModel) {
+fun SetUserInfoDialogView(homeViewModel: HomeViewModel, viewModel: UserInfoViewModel,bleViewModel: BleViewModel) {
     Dialog(
         onDismissRequest = { homeViewModel.toggleUserInfo() }) {
         Card(
@@ -150,7 +152,7 @@ fun SetUserInfoDialogView(homeViewModel: HomeViewModel, viewModel: UserInfoViewM
                     ElevatedButton(
                         onClick = {
                             viewModel.setData()
-                            homeViewModel.toggleUserInfo()
+                            homeViewModel.toggleUserInfo().also { bleViewModel.getUserInfo() }
                         }, colors = ButtonDefaults.elevatedButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -168,5 +170,5 @@ fun SetUserInfoDialogView(homeViewModel: HomeViewModel, viewModel: UserInfoViewM
 @Preview(showBackground = false)
 @Composable
 fun PreviewSetUserInfoDialog() {
-    SetUserInfoDialogView(viewModel = UserInfoViewModel(), homeViewModel = HomeViewModel())
+    SetUserInfoDialogView(viewModel = UserInfoViewModel(), homeViewModel = HomeViewModel(), bleViewModel = BleViewModel())
 }
