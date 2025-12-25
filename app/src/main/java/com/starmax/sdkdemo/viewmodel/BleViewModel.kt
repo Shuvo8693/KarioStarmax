@@ -176,6 +176,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
         private set
     var bleHealthResponseLabel = mutableStateOf<Map<String, Any>>(emptyMap())
     var bleBatteryResponseLabel = mutableStateOf("")
+    var bleStressResponseLabel = mutableStateOf("")
+    var blesSportsResponseLabel = mutableStateOf("")
 
     val context: Context by inject()
 
@@ -1566,10 +1568,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getSportHistory().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value =
-                    SportHistoryFactory(StarmaxBleClient.instance.bleNotify)
-                        .buildMapFromProtobuf(it)
-                        .toJson()
+                val jsonValue = SportHistoryFactory(StarmaxBleClient.instance.bleNotify).buildMapFromProtobuf(it).toJson()
+                bleResponseLabel.value = jsonValue
+                blesSportsResponseLabel.value = jsonValue
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1808,6 +1809,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                         }
                     }
                     bleResponseLabel.value = str
+                   val stressLastValue = it.dataList.lastOrNull { data -> data.value > 0 }
+                    bleStressResponseLabel.value = stressLastValue?.value.toString()
+
                 } else {
                     bleResponseLabel.value = statusLabel(it.status)
                 }

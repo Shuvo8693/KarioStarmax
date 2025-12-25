@@ -86,7 +86,7 @@ class InstructionListViewModel() : ViewModel() {
 //                "Get File System",
 //                "Get Dial Info",
 //                "Get Log",
-//                "Get Alarm Clock",
+                "Get Alarm Clock",
 //                "Get Sedentary Reminder",
 //                "Get Power File",
 //                "Get Sensor File",
@@ -138,7 +138,7 @@ class InstructionListViewModel() : ViewModel() {
 //                "Power Consumption Mode",
 //                "Unit Test",
 //                "Restore Factory Settings",
-//                "Shut Down",
+                "Shut Down",
             ),
             "Switch" to listOf(
 //                "Open Heart Rate Switch",

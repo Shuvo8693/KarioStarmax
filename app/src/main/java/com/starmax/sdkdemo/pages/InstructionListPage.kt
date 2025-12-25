@@ -892,6 +892,8 @@ fun buildInstructionList(
                 navController.navigate(NavPage.DevicePage.name)
             }
         },
+
+
         InstructionItem("Get File System", "Get Device Info") {
             homeViewModel.toggleFileSystemOpen()
             scope.launch {

@@ -498,6 +498,8 @@ fun HomePage(navController: NavController) {
         if (bleViewModel.bleState == BleState.CONNECTED) {
             bleViewModel.getHealthDetail()
             bleViewModel.getPower()
+            bleViewModel.getPressureHistory(time = System.currentTimeMillis() )
+//            bleViewModel.getSportHistory()
 //            bleViewModel.getSleepHistory(System.currentTimeMillis())
 //            bleViewModel.getStepHistory(System.currentTimeMillis())
 //            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
@@ -550,6 +552,8 @@ fun HomePage(navController: NavController) {
             // Refresh all health data
             bleViewModel.getHealthDetail()
             bleViewModel.getPower()
+            bleViewModel.getPressureHistory(time = System.currentTimeMillis() )
+//            bleViewModel.getSportHistory()
 //            bleViewModel.getStepHistory(System.currentTimeMillis())
 //            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
 
@@ -839,14 +843,14 @@ fun HealthMetricsGrid(bleViewModel: BleViewModel) {
         ) {
             HealthMetricCard(
                 title = "Sports records",
-                value = "No data",
+                value = bleViewModel.blesSportsResponseLabel.value,
                 icon = Icons.Default.DirectionsRun,
                 iconColor = Color(0xFFFF9800),
                 modifier = Modifier.weight(1f)
             )
             HealthMetricCard(
                 title = "Mood tracking",
-                value = "No data",
+                value = "Stress level : ${bleViewModel.bleStressResponseLabel.value}",
                 icon = Icons.Default.EmojiEmotions,
                 iconColor = Color(0xFF2196F3),
                 modifier = Modifier.weight(1f)
