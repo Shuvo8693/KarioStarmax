@@ -816,6 +816,13 @@ fun buildInstructionList(
         },
         InstructionItem("Get Sport Mode", "Get Device Info") {
             bleViewModel.getSportMode()
+
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
+        },
+        InstructionItem("Get Goals", "Get Device Info") {
+            bleViewModel.getGoals()
             scope.launch {
                 navController.navigate(NavPage.HealthHistoryPage.name)
             }

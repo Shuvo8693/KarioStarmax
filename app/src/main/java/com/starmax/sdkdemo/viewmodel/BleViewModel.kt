@@ -822,7 +822,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getTimeOffset().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "Time zone retrieved successfully"
+                bleResponseLabel.value = it.timeOffset.toString()
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -905,7 +905,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getClock().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = it.toString()
+                bleResponseLabel.value = it.clockListList.toString()
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1375,6 +1375,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
 
     fun getSportMode() {
         initData()
+
         StarmaxBleClient.instance.getSportMode().subscribe({
             if (it.status == 0) {
                 var str = ""
@@ -1382,6 +1383,21 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 for (i in 0 until dataList.size) {
                     str += "Sport mode: ${sportModeLabel(dataList[i])}\n"
                 }
+                bleResponseLabel.value = str
+            } else {
+                bleResponseLabel.value = statusLabel(it.status)
+            }
+        }, {}).let {
+            sendDisposable.add(it)
+        }
+    }
+
+    fun getGoals() {
+        initData()
+        StarmaxBleClient.instance.getGoals().subscribe({
+            if (it.status == 0) {
+                val str = "Steps: ${it.steps} Distance: ${it.distance} kcal: ${it.heat}"
+
                 bleResponseLabel.value = str
             } else {
                 bleResponseLabel.value = statusLabel(it.status)

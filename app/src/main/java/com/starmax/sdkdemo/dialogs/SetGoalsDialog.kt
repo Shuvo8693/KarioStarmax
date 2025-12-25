@@ -20,14 +20,14 @@ fun SetGoalsDialog() {
     val homeViewModel: HomeViewModel by lazyKoinViewModel()
 
     LaunchedEffect(Unit) {
-        viewModel.getData()
+        viewModel.getGoalData()  // Fetch get goal data when the composable is first displayed
     }
 
     SetGoalsDialogView(homeViewModel = homeViewModel, viewModel = viewModel)
 }
 
 @Composable
-fun SetGoalsDialogView(homeViewModel: HomeViewModel,viewModel: GoalsViewModel) {
+fun SetGoalsDialogView(homeViewModel: HomeViewModel, viewModel: GoalsViewModel) {
 
     Dialog(
         onDismissRequest = { homeViewModel.toggleGoals() }) {
@@ -37,7 +37,7 @@ fun SetGoalsDialogView(homeViewModel: HomeViewModel,viewModel: GoalsViewModel) {
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "设置一天运动目标",
+                    text = "Set Daily Activity Goals",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(15.dp)
                 )
@@ -45,40 +45,40 @@ fun SetGoalsDialogView(homeViewModel: HomeViewModel,viewModel: GoalsViewModel) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "计步目标", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Step Goal", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.steps.toString(), onValueChange = {
                         viewModel.steps = it.toIntOrNull() ?: 10000
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "计步目标",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Step Goal", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "热量(千卡)", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Calories (kcal)", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.heat.toString(), onValueChange = {
                         viewModel.heat = it.toIntOrNull() ?: 10000
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "热量",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Calories", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "距离(千米)", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Distance (km)", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.distance.toString(), onValueChange = {
                         viewModel.distance = it.toIntOrNull() ?: 10
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "距离",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Distance", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Divider()
@@ -91,11 +91,11 @@ fun SetGoalsDialogView(homeViewModel: HomeViewModel,viewModel: GoalsViewModel) {
                     OutlinedButton(onClick = {
                         homeViewModel.toggleGoals()
                     }) {
-                        Text(text = "取消")
+                        Text(text = "Cancel")
                     }
                     ElevatedButton(
                         onClick = {
-                            viewModel.setData()
+                            viewModel.setGoalData()
                             homeViewModel.toggleGoals()
                         }, colors = ButtonDefaults.elevatedButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -103,7 +103,7 @@ fun SetGoalsDialogView(homeViewModel: HomeViewModel,viewModel: GoalsViewModel) {
                         ),
                         modifier = Modifier.offset(15.dp)
                     ) {
-                        Text(text = "确定")
+                        Text(text = "Confirm")
                     }
                 }
             }

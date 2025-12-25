@@ -30,7 +30,7 @@ fun SetUserInfoDialog() {
 }
 
 @Composable
-fun SetUserInfoDialogView(homeViewModel: HomeViewModel,viewModel:UserInfoViewModel) {
+fun SetUserInfoDialogView(homeViewModel: HomeViewModel, viewModel: UserInfoViewModel) {
     Dialog(
         onDismissRequest = { homeViewModel.toggleUserInfo() }) {
         Card(
@@ -39,7 +39,7 @@ fun SetUserInfoDialogView(homeViewModel: HomeViewModel,viewModel:UserInfoViewMod
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "设置用户信息",
+                    text = "Set User Info",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(15.dp)
                 )
@@ -47,93 +47,93 @@ fun SetUserInfoDialogView(homeViewModel: HomeViewModel,viewModel:UserInfoViewMod
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "性别", style = MaterialTheme.typography.labelMedium)
-                    IconToggleButton(checked = viewModel.sex == 0, onCheckedChange = { it ->
+                    Text(text = "Gender", style = MaterialTheme.typography.labelMedium)
+                    IconToggleButton(checked = viewModel.sex == 0, onCheckedChange = { _ ->
                         viewModel.sex = 0
                     }) {
-                        Icon(if(viewModel.sex == 0) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "女")
+                        Icon(if(viewModel.sex == 0) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "Female")
                     }
-                    Text(text = "女", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Female", style = MaterialTheme.typography.labelSmall)
 
-                    IconToggleButton(checked = viewModel.sex == 1, onCheckedChange = { it ->
+                    IconToggleButton(checked = viewModel.sex == 1, onCheckedChange = { _ ->
                         viewModel.sex = 1
                     }) {
-                        Icon(if(viewModel.sex == 1) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "男")
+                        Icon(if(viewModel.sex == 1) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "Male")
                     }
-                    Text(text = "男", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Male", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "年龄", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Age", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.age.toString(), onValueChange = {
                         viewModel.age = it.toIntOrNull() ?: 20
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "年龄",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Age", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "身高(厘米)", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Height (cm)", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.height.toString(), onValueChange = {
                         viewModel.height = it.toIntOrNull() ?: 180
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "身高",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Height", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "体重(0.1千克)", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Weight (0.1kg)", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.weight.toString(), onValueChange = {
                         viewModel.weight = it.toIntOrNull() ?: 75
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "体重",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Weight", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "佩戴方式", style = MaterialTheme.typography.labelMedium)
-                    IconToggleButton(checked = viewModel.handWear == 0, onCheckedChange = { it ->
+                    Text(text = "Wearing Style", style = MaterialTheme.typography.labelMedium)
+                    IconToggleButton(checked = viewModel.handWear == 0, onCheckedChange = { _ ->
                         viewModel.handWear = 0
                     }) {
                         Icon(
                             if (viewModel.handWear == 0) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "左手"
+                            "Left Hand"
                         )
                     }
-                    Text(text = "左手", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Left Hand", style = MaterialTheme.typography.labelSmall)
 
-                    IconToggleButton(checked = viewModel.handWear == 1, onCheckedChange = { it ->
+                    IconToggleButton(checked = viewModel.handWear == 1, onCheckedChange = { _ ->
                         viewModel.handWear = 1
                     }) {
                         Icon(
                             if (viewModel.handWear == 1) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "右手"
+                            "Right Hand"
                         )
                     }
-                    Text(text = "右手", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Right Hand", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconToggleButton(checked = viewModel.isGTS10, onCheckedChange = { it ->
+                    IconToggleButton(checked = viewModel.isGTS10, onCheckedChange = { _ ->
                         viewModel.isGTS10 = !viewModel.isGTS10
                     }) {
-                        Icon(if(viewModel.isGTS10) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "开关")
+                        Icon(if(viewModel.isGTS10) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "Toggle")
                     }
-                    Text(text = "是否为GTS10", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Is GTS10?", style = MaterialTheme.typography.labelSmall)
                 }
                 Divider()
                 Row(
@@ -145,7 +145,7 @@ fun SetUserInfoDialogView(homeViewModel: HomeViewModel,viewModel:UserInfoViewMod
                     OutlinedButton(onClick = {
                         homeViewModel.toggleUserInfo()
                     }) {
-                        Text(text = "取消")
+                        Text(text = "Cancel")
                     }
                     ElevatedButton(
                         onClick = {
@@ -157,7 +157,7 @@ fun SetUserInfoDialogView(homeViewModel: HomeViewModel,viewModel:UserInfoViewMod
                         ),
                         modifier = Modifier.offset(15.dp)
                     ) {
-                        Text(text = "确定")
+                        Text(text = "Confirm")
                     }
                 }
             }

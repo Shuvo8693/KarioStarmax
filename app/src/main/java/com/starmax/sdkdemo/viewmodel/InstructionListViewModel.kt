@@ -69,6 +69,7 @@ class InstructionListViewModel() : ViewModel() {
                 "Get Drink Water Reminder",
                 "Get Sport Mode",
                 "Get Watch Mode",
+                "Get Goals",
 //                "Get NFC Card Info",
 //                "Get BT Status",
 //                "Get Power",
