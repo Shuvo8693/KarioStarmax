@@ -1006,16 +1006,16 @@ fun buildInstructionList(
             homeViewModel.toggleFemaleHealthOpen()
         },
         InstructionItem("Set Sedentary Reminder", "Set Device Settings") {
-            bleViewModel.setLongSit()
-            scope.launch {
-                navController.navigate(NavPage.DevicePage.name)
-            }
+//            bleViewModel.setLongSit()
+//            scope.launch {
+//                navController.navigate(NavPage.DevicePage.name)
+//            }
         },
         InstructionItem("Set Drink Water Reminder", "Set Device Settings") {
-            bleViewModel.setDrinkWater()
-            scope.launch {
-                navController.navigate(NavPage.DevicePage.name)
-            }
+//            bleViewModel.setDrinkWater()
+//            scope.launch {
+//                navController.navigate(NavPage.DevicePage.name)
+//            }
         },
 
         // ═══════════════════════════════════════════════════════
@@ -1029,9 +1029,15 @@ fun buildInstructionList(
         },
         InstructionItem("Volume", "Device Control") {
             homeViewModel.toggleVolume()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Pair Command", "Device Control") {
             bleViewModel.pair()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Bluetooth Broadcast Data Update On", "Device Control") {
             bleViewModel.setBroadcastOnOff(true)
@@ -1056,9 +1062,15 @@ fun buildInstructionList(
         },
         InstructionItem("Camera Control", "Device Control") {
             homeViewModel.toggleCamera()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Call Control", "Device Control") {
             homeViewModel.toggleCall()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Sync Time", "Device Control") {
             bleViewModel.setTime()
@@ -1074,6 +1086,9 @@ fun buildInstructionList(
         },
         InstructionItem("Time Format", "Device Control") {
             homeViewModel.toggleDateFormatDialog()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Power Consumption Mode", "Device Control") {
             scope.launch { navController.navigate(NavPage.QuickBatteryModePage.name) }

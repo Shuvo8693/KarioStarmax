@@ -13,9 +13,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class CameraControlViewModel(
-
-) : ViewModel(), KoinComponent {
+class CameraControlViewModel() : ViewModel(), KoinComponent {
     var cameraControlType by mutableStateOf(CameraControlType.CameraIn)
 
     val context : Context by inject()
@@ -23,7 +21,7 @@ class CameraControlViewModel(
     fun send(){
         StarmaxBleClient.instance.cameraControl(cameraControlType).subscribe({
             viewModelScope.launch {
-                Toast.makeText(context, "设置相机成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Camera setup successful", Toast.LENGTH_SHORT).show()
             }
         },{
 

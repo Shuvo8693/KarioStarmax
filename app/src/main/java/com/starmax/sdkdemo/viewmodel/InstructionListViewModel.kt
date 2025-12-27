@@ -88,7 +88,7 @@ class InstructionListViewModel() : ViewModel() {
 //                "Get File System",
 //                "Get Dial Info",
 //                "Get Log",
-                "Get Alarm Clock",
+//                "Get Alarm Clock",
 //                "Get Sedentary Reminder",
 //                "Get Power File",
 //                "Get Sensor File",
@@ -98,7 +98,7 @@ class InstructionListViewModel() : ViewModel() {
 
             "Settings" to listOf(
 //                "Set Server",
-                "Set Status",
+//                "Set Status",
                 "Set Time Zone",
 //                "Set Daylight Saving Time",
                 "Set User Info",
@@ -108,14 +108,15 @@ class InstructionListViewModel() : ViewModel() {
                 "Set Do Not Disturb",
                 "Set Sleep Plan",
                 "Set Sport Mode",
+//                "Set Alarm Clock",
 //                "Set Password",
 //                "Set Female Health",
                 "Set Sedentary Reminder",
                 "Set Drink Water Reminder",
 //                "Event Reminder",
 //                "Set NFC Card",
-                "Bluetooth Broadcast Data Update On",
-                "Bluetooth Broadcast Data Update Off"
+//                "Bluetooth Broadcast Data Update On",
+//                "Bluetooth Broadcast Data Update Off"
             ),
             "Control" to listOf(
 //                "Keep Foreground Running",
@@ -130,8 +131,8 @@ class InstructionListViewModel() : ViewModel() {
 //                "GTS10 Two-way Pairing",
                 "Find Device",
                 "Stop Finding",
-//                "Camera Control",
-//                "Call Control",
+                "Camera Control",
+                "Call Control",
 //                "Sync Time",
 //                "Send Message",
 //                "App Store",

@@ -12,16 +12,14 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class DateFormatViewModel(
-
-) : ViewModel() , KoinComponent {
+class DateFormatViewModel() : ViewModel() , KoinComponent {
     var dateFormat by mutableStateOf(0)
 
     val context : Context by inject()
 
     fun getData() {
         StarmaxBleClient.instance.getDateFormat().subscribe({
-            it.dateFormat
+            dateFormat = it.dateFormat
         }, {
 
         }).let { }
@@ -32,7 +30,7 @@ class DateFormatViewModel(
             dateFormat
         ).subscribe({
             viewModelScope.launch {
-                Toast.makeText(context, "设置时间格式成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Set time format successfully", Toast.LENGTH_SHORT).show()
             }
         }, {
 

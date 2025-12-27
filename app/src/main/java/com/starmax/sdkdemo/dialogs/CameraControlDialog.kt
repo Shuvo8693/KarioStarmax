@@ -27,8 +27,9 @@ fun CameraControlDialog() {
 
     CameraControlDialogView(bleViewModel = bleViewModel, homeViewModel = homeViewModel, viewModel = viewModel)
 }
+
 @Composable
-fun CameraControlDialogView(homeViewModel: HomeViewModel,bleViewModel: BleViewModel,viewModel: CameraControlViewModel) {
+fun CameraControlDialogView(homeViewModel: HomeViewModel, bleViewModel: BleViewModel, viewModel: CameraControlViewModel) {
 
     Dialog(
         onDismissRequest = { homeViewModel.toggleCamera() }) {
@@ -38,7 +39,7 @@ fun CameraControlDialogView(homeViewModel: HomeViewModel,bleViewModel: BleViewMo
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "拍照控制",
+                    text = "Camera Control",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(15.dp)
                 )
@@ -46,32 +47,41 @@ fun CameraControlDialogView(homeViewModel: HomeViewModel,bleViewModel: BleViewMo
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconToggleButton(checked = viewModel.cameraControlType == CameraControlType.CameraIn, onCheckedChange = { it ->
+                    IconToggleButton(checked = viewModel.cameraControlType == CameraControlType.CameraIn, onCheckedChange = { _ ->
                         viewModel.cameraControlType = CameraControlType.CameraIn
                     }) {
-                        Icon(if(viewModel.cameraControlType == CameraControlType.CameraIn) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "进入拍照界面")
+                        Icon(
+                            if(viewModel.cameraControlType == CameraControlType.CameraIn) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
+                            "Enter Camera Interface"
+                        )
                     }
-                    Text(text = "进入拍照界面", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Enter Camera Interface", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconToggleButton(checked = viewModel.cameraControlType == CameraControlType.CameraExit, onCheckedChange = { it ->
+                    IconToggleButton(checked = viewModel.cameraControlType == CameraControlType.CameraExit, onCheckedChange = { _ ->
                         viewModel.cameraControlType = CameraControlType.CameraExit
                     }) {
-                        Icon(if(viewModel.cameraControlType == CameraControlType.CameraExit) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "退出拍照界面")
+                        Icon(
+                            if(viewModel.cameraControlType == CameraControlType.CameraExit) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
+                            "Exit Camera Interface"
+                        )
                     }
-                    Text(text = "退出拍照界面", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Exit Camera Interface", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconToggleButton(checked = viewModel.cameraControlType == CameraControlType.TakePhoto, onCheckedChange = { it ->
+                    IconToggleButton(checked = viewModel.cameraControlType == CameraControlType.TakePhoto, onCheckedChange = { _ ->
                         viewModel.cameraControlType = CameraControlType.TakePhoto
                     }) {
-                        Icon(if(viewModel.cameraControlType == CameraControlType.TakePhoto) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank, "app点击拍照")
+                        Icon(
+                            if(viewModel.cameraControlType == CameraControlType.TakePhoto) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
+                            "App Click to Take Photo"
+                        )
                     }
-                    Text(text = "app点击拍照", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "App Click to Take Photo", style = MaterialTheme.typography.labelSmall)
                 }
                 Divider()
                 Row(
@@ -83,7 +93,7 @@ fun CameraControlDialogView(homeViewModel: HomeViewModel,bleViewModel: BleViewMo
                     OutlinedButton(onClick = {
                         homeViewModel.toggleCamera()
                     }) {
-                        Text(text = "取消")
+                        Text(text = "Cancel")
                     }
                     ElevatedButton(
                         onClick = {
@@ -95,7 +105,7 @@ fun CameraControlDialogView(homeViewModel: HomeViewModel,bleViewModel: BleViewMo
                         ),
                         modifier = Modifier.offset(15.dp)
                     ) {
-                        Text(text = "确定")
+                        Text(text = "Confirm")
                     }
                 }
             }

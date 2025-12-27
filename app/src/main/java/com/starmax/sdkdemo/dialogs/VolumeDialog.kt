@@ -47,19 +47,19 @@ fun VolumeDialogView(homeViewModel: HomeViewModel, viewModel: VolumeViewModel) {
                 ),
                 modifier = Modifier.offset(15.dp)
             ) {
-                Text(text = "确定")
+                Text(text = "Confirm")
             }
         },
         dismissButton = {
             OutlinedButton(onClick = {
                 homeViewModel.toggleVolume()
             }) {
-                Text(text = "取消")
+                Text(text = "Cancel")
             }
         },
         title = {
             Text(
-                text = "设置声音",
+                text = "Volume Settings",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(15.dp)
             )
@@ -73,7 +73,7 @@ fun VolumeDialogView(homeViewModel: HomeViewModel, viewModel: VolumeViewModel) {
                     Row(
                         verticalAlignment = Alignment.Top
                     ) {
-                        Text(text = "流类型", style = MaterialTheme.typography.labelMedium)
+                        Text(text = "Stream Type", style = MaterialTheme.typography.labelMedium)
                         LazyVerticalGrid(
                             modifier = Modifier.height(350.dp),
                             columns = GridCells.Fixed(3)) {
@@ -93,7 +93,7 @@ fun VolumeDialogView(homeViewModel: HomeViewModel, viewModel: VolumeViewModel) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    IconToggleButton(checked = viewModel.streamType == streamTypeList[i], onCheckedChange = { it ->
+                                    IconToggleButton(checked = viewModel.streamType == streamTypeList[i], onCheckedChange = { _ ->
                                         viewModel.streamType = streamTypeList[i]
                                         viewModel.getVolume()
                                     }) {
@@ -114,7 +114,7 @@ fun VolumeDialogView(homeViewModel: HomeViewModel, viewModel: VolumeViewModel) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "音量", style = MaterialTheme.typography.labelMedium)
+                        Text(text = "Volume", style = MaterialTheme.typography.labelMedium)
                         Slider(value = viewModel.volume.toFloat(), onValueChange = {
                             viewModel.volume = it.toInt()
                             viewModel.setVolume()

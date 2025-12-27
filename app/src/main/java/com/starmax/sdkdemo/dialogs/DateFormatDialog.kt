@@ -43,19 +43,19 @@ fun DateFormatDialogView(homeViewModel: HomeViewModel, viewModel: DateFormatView
                 ),
                 modifier = Modifier.offset(15.dp)
             ) {
-                Text(text = "确定")
+                Text(text = "Confirm")
             }
         },
         dismissButton = {
             OutlinedButton(onClick = {
                 homeViewModel.toggleDateFormatDialog()
             }) {
-                Text(text = "取消")
+                Text(text = "Cancel")
             }
         },
         title = {
             Text(
-                text = "设置状态",
+                text = "Date Format Settings",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(15.dp)
             )
@@ -68,30 +68,30 @@ fun DateFormatDialogView(homeViewModel: HomeViewModel, viewModel: DateFormatView
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "时间制", style = MaterialTheme.typography.labelMedium)
+                        Text(text = "Time System", style = MaterialTheme.typography.labelMedium)
                         IconToggleButton(
                             checked = viewModel.dateFormat == 0,
-                            onCheckedChange = { it ->
+                            onCheckedChange = { _ ->
                                 viewModel.dateFormat = 0
                             }) {
                             Icon(
                                 if (viewModel.dateFormat == 0) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                                "顺序"
+                                "Normal Order"
                             )
                         }
-                        Text(text = "顺序", style = MaterialTheme.typography.labelSmall)
+                        Text(text = "Normal", style = MaterialTheme.typography.labelSmall)
 
                         IconToggleButton(
                             checked = viewModel.dateFormat == 1,
-                            onCheckedChange = { it ->
+                            onCheckedChange = { _ ->
                                 viewModel.dateFormat = 1
                             }) {
                             Icon(
                                 if (viewModel.dateFormat == 1) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                                "倒序"
+                                "Reverse Order"
                             )
                         }
-                        Text(text = "倒序", style = MaterialTheme.typography.labelSmall)
+                        Text(text = "Reverse", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

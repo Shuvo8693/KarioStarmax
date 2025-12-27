@@ -14,9 +14,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class CallControlViewModel(
-
-) : ViewModel(), KoinComponent {
+class CallControlViewModel() : ViewModel(), KoinComponent {
     var callControlType by mutableStateOf(CallControlType.Answer)
 
     var callNumber by mutableStateOf("")
@@ -33,7 +31,7 @@ class CallControlViewModel(
 
         StarmaxBleClient.instance.phoneControl(callControlType,number,false).subscribe({
             viewModelScope.launch {
-                Toast.makeText(context, "发送电话成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context,  "Call sent successfully", Toast.LENGTH_SHORT).show()
             }
         },{
 

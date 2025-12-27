@@ -23,12 +23,12 @@ fun CallControlDialog() {
     val viewModel: CallControlViewModel = koinViewModel()
     val homeViewModel: HomeViewModel by lazyKoinViewModel()
 
-    CallControlDialogView(homeViewModel = homeViewModel,viewModel = viewModel)
+    CallControlDialogView(homeViewModel = homeViewModel, viewModel = viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CallControlDialogView(homeViewModel: HomeViewModel,viewModel: CallControlViewModel) {
+fun CallControlDialogView(homeViewModel: HomeViewModel, viewModel: CallControlViewModel) {
     Dialog(
         onDismissRequest = { homeViewModel.toggleCall() }) {
         Card(
@@ -37,7 +37,7 @@ fun CallControlDialogView(homeViewModel: HomeViewModel,viewModel: CallControlVie
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "来电控制",
+                    text = "Call Control",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(15.dp)
                 )
@@ -47,52 +47,52 @@ fun CallControlDialogView(homeViewModel: HomeViewModel,viewModel: CallControlVie
                 ) {
                     IconToggleButton(
                         checked = viewModel.callControlType == CallControlType.HangUp,
-                        onCheckedChange = { it ->
+                        onCheckedChange = { _ ->
                             viewModel.callControlType = CallControlType.HangUp
                         }) {
                         Icon(
                             if (viewModel.callControlType == CallControlType.HangUp) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "挂断"
+                            "Hang Up"
                         )
                     }
-                    Text(text = "挂断", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Hang Up", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconToggleButton(
                         checked = viewModel.callControlType == CallControlType.Answer,
-                        onCheckedChange = { it ->
+                        onCheckedChange = { _ ->
                             viewModel.callControlType = CallControlType.Answer
                         }) {
                         Icon(
                             if (viewModel.callControlType == CallControlType.Answer) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "接听"
+                            "Answer"
                         )
                     }
-                    Text(text = "接听", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Answer", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconToggleButton(
                         checked = viewModel.callControlType == CallControlType.Incoming,
-                        onCheckedChange = { it ->
+                        onCheckedChange = { _ ->
                             viewModel.callControlType = CallControlType.Incoming
                         }) {
                         Icon(
                             if (viewModel.callControlType == CallControlType.Incoming) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "来电"
+                            "Incoming Call"
                         )
                     }
-                    Text(text = "来电", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Incoming", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.callNumber, onValueChange = {
                         viewModel.callNumber = it
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "电话号码/名字",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Number/Name", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
@@ -100,22 +100,22 @@ fun CallControlDialogView(homeViewModel: HomeViewModel,viewModel: CallControlVie
                 ) {
                     IconToggleButton(
                         checked = viewModel.callControlType == CallControlType.Exit,
-                        onCheckedChange = { it ->
+                        onCheckedChange = { _ ->
                             viewModel.callControlType = CallControlType.Exit
                         }) {
                         Icon(
                             if (viewModel.callControlType == CallControlType.Exit) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "去电"
+                            "Outgoing Call"
                         )
                     }
-                    Text(text = "去电", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Outgoing", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.exitNumber, onValueChange = {
                         viewModel.exitNumber = it
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "电话号码/名字",style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Number/Name", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Divider()
@@ -128,7 +128,7 @@ fun CallControlDialogView(homeViewModel: HomeViewModel,viewModel: CallControlVie
                     OutlinedButton(onClick = {
                         homeViewModel.toggleCall()
                     }) {
-                        Text(text = "取消")
+                        Text(text = "Cancel")
                     }
                     ElevatedButton(
                         onClick = {
@@ -140,7 +140,7 @@ fun CallControlDialogView(homeViewModel: HomeViewModel,viewModel: CallControlVie
                         ),
                         modifier = Modifier.offset(15.dp)
                     ) {
-                        Text(text = "确定")
+                        Text(text = "Confirm")
                     }
                 }
             }
