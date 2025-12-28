@@ -731,6 +731,9 @@ fun buildInstructionList(
                 val picker = MaterialDatePicker.Builder.datePicker().build()
                 picker.addOnPositiveButtonClickListener { date ->
                     bleViewModel.getMaiHistory(date)
+                    scope.launch {
+                        navController.navigate(NavPage.DevicePage.name)
+                    }
                 }
                 picker.show(it.supportFragmentManager, picker.toString())
             }
@@ -791,9 +794,15 @@ fun buildInstructionList(
         },
         InstructionItem("Sync Sport", "Sync History") {
             homeViewModel.toggleSportSyncToDeviceDialog()
+            scope.launch {
+                navController.navigate(NavPage.HealthHistoryPage.name)
+            }
         },
         InstructionItem("Sync Sport Record", "Sync History") {
             bleViewModel.getSportHistory()
+            scope.launch {
+                navController.navigate(NavPage.SportsHistoryPage.name)
+            }
         },
         InstructionItem("Sync Step Count Sleep Record", "Sync History") {
             activity?.let {
@@ -958,6 +967,7 @@ fun buildInstructionList(
             }
         },
         InstructionItem("Set User Info", "Set Device Settings") {
+
             homeViewModel.toggleUserInfo()
             scope.launch {
                 navController.navigate(NavPage.DevicePage.name)

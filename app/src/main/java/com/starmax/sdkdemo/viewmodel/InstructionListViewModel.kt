@@ -174,9 +174,9 @@ class InstructionListViewModel() : ViewModel() {
 //                "Switch Dial",
 //                "Send Dial V2"
 //            ),
-            "Other" to listOf(
-                "Set Alarm Clock",
-                "Read Signal Strength",
+
+//            "Other" to listOf(
+//                "Read Signal Strength",
 //                "Saiwei Algorithm",
 //                "Blood Sugar Calibration",
 //                "Blood Pressure Calibration",
@@ -189,7 +189,7 @@ class InstructionListViewModel() : ViewModel() {
 //                "Get Morning and Evening History",
 //                "Send Local Logo",
 //                "Clear Logo",
-            )
+//            )
         )
     )
     var keepInstructionMap by mutableStateOf(instructionMap.toMap())

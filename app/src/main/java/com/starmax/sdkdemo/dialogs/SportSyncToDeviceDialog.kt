@@ -39,7 +39,7 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                 ),
                 modifier = Modifier.offset(15.dp)
             ) {
-                Text(text = "经纬度生成")
+                Text(text = "Generate Lat/Lng")
             }
             ElevatedButton(
                 onClick = {
@@ -51,7 +51,7 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                 ),
                 modifier = Modifier.offset(15.dp)
             ) {
-                Text(text = "确定")
+                Text(text = "Confirm")
             }
 
         },
@@ -59,12 +59,12 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
             OutlinedButton(onClick = {
                 homeViewModel.toggleSportSyncToDeviceDialog()
             }) {
-                Text(text = "取消")
+                Text(text = "Cancel")
             }
         },
         title = {
             Text(
-                text = "设置运动",
+                text = "Sport Settings",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(15.dp)
             )
@@ -76,15 +76,15 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                 Row(
                     verticalAlignment = Alignment.Top
                 ) {
-                    Text(text = "运动类型", style = MaterialTheme.typography.labelMedium)
+                    Text(text = "Type", style = MaterialTheme.typography.labelMedium)
                     LazyVerticalGrid(
                         modifier = Modifier.height(150.dp),
                         columns = GridCells.Fixed(3)) {
                         val typeList = listOf(
-                            "户外跑步",
-                            "户外步行",
-                            "户外骑行",
-                            "遛狗",
+                            "Outdoor Run",
+                            "Outdoor Walk",
+                            "Outdoor Cycle",
+                            "Dog Walking",
                         )
 
                         items(typeList.size, key = {
@@ -93,7 +93,7 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                IconToggleButton(checked = viewModel.sportType == i + 1, onCheckedChange = { it ->
+                                IconToggleButton(checked = viewModel.sportType == i + 1, onCheckedChange = { _ ->
                                     viewModel.sportType = i + 1
                                 }) {
                                     Icon(
@@ -111,17 +111,17 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                 Row(
                     verticalAlignment = Alignment.Top
                 ) {
-                    Text(text = "状态", style = MaterialTheme.typography.labelMedium)
+                    Text(text = "Status", style = MaterialTheme.typography.labelMedium)
                     LazyVerticalGrid(
                         modifier = Modifier.height(100.dp),
                         columns = GridCells.Fixed(3)) {
                         val statusList = listOf(
-                            "开启",
-                            "进行中",
-                            "暂停",
-                            "恢复",
-                            "结束",
-                            "设置目标"
+                            "Start",
+                            "Ongoing",
+                            "Pause",
+                            "Resume",
+                            "Stop",
+                            "Set Goal"
                         )
 
                         items(statusList.size, key = {
@@ -130,7 +130,7 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                IconToggleButton(checked = viewModel.sportStatus == i + 1, onCheckedChange = { it ->
+                                IconToggleButton(checked = viewModel.sportStatus == i + 1, onCheckedChange = { _ ->
                                     viewModel.sportStatus = i + 1
                                 }) {
                                     Icon(
@@ -148,72 +148,72 @@ fun SportSyncToDeviceDialogView(homeViewModel: HomeViewModel, viewModel: SportSy
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "距离", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Distance", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.sportDistance.toString(), onValueChange = {
                         viewModel.sportDistance = it.toIntOrNull() ?: 0
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "距离", style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Distance", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "速度", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Speed", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.speed.toString(), onValueChange = {
                         viewModel.speed = it.toIntOrNull() ?: 0
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "速度", style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Speed", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "目标距离", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Goal Dist", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.goalDistance.toString(), onValueChange = {
                         viewModel.goalDistance = it.toIntOrNull() ?: 0
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "目标距离", style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Goal Distance", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "目标热量", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Goal Cal", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.goalHeat.toString(), onValueChange = {
                         viewModel.goalHeat = it.toIntOrNull() ?: 0
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "目标热量", style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Goal Calories", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "目标分钟", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Goal Min", style = MaterialTheme.typography.labelSmall)
                     TextField(value = viewModel.goalMinute.toString(), onValueChange = {
                         viewModel.goalMinute = it.toIntOrNull() ?: 0
                     },
                         textStyle = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.offset(x = 15.dp),
                         placeholder = {
-                            Text(text = "目标分钟", style = MaterialTheme.typography.labelSmall)
+                            Text(text = "Goal Minutes", style = MaterialTheme.typography.labelSmall)
                         })
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "轨迹："+viewModel.locationData.map { "(${it.lat},${it.lng})" }.joinToString(","), style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Path: "+ viewModel.locationData.joinToString(",") { "(${it.lat},${it.lng})" }, style = MaterialTheme.typography.labelSmall)
                 }
             }
         })

@@ -31,8 +31,8 @@ class SportSyncToDeviceViewModel : ViewModel() , KoinComponent {
     }
 
     fun generateContinuousCoordinates(
-    count: Int,
-    maxStep: Double = 0.01
+        count: Int,
+        maxStep: Double = 0.01
     ): List<LocationData> {
         require(count > 0) { "Count must be at least 1" }
         require(maxStep >= 0) { "Max step must be non-negative" }
@@ -40,7 +40,7 @@ class SportSyncToDeviceViewModel : ViewModel() , KoinComponent {
         val random = Random.Default
         val coordinates = mutableListOf<LocationData>()
 
-        // 生成初始坐标
+        // Generate initial coordinates
         var currentLng = random.nextDouble(-180.0, 180.0)
         var currentLat = random.nextDouble(-90.0, 90.0)
         coordinates.add(LocationData.newBuilder()
@@ -49,18 +49,18 @@ class SportSyncToDeviceViewModel : ViewModel() , KoinComponent {
             .build())
 
         repeat(count - 1) {
-            // 生成随机偏移量
+            // Generate random offsets
             val offsetLng = random.nextDouble(-maxStep, maxStep)
             val offsetLat = random.nextDouble(-maxStep, maxStep)
 
-            // 更新当前坐标
+            // Update current coordinates
             currentLng += offsetLng
             currentLat += offsetLat
 
-            // 处理经度边界（-180 到 180）
+            // Handling longitude boundaries (-180 to 180)
             currentLng = ((currentLng % 360) + 540) % 360 - 180
 
-            // 处理纬度边界（-90 到 90）
+            // Handling latitude boundaries (-90 to 90)
             currentLat = currentLat.coerceIn(-90.0, 90.0)
 
             coordinates.add(LocationData.newBuilder()
@@ -84,10 +84,12 @@ class SportSyncToDeviceViewModel : ViewModel() , KoinComponent {
             goalMinute
         ).subscribe({
             viewModelScope.launch {
-                Toast.makeText(context, "设置运动成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Sport data synced successfully", Toast.LENGTH_SHORT).show()
             }
         }, {
-
+            viewModelScope.launch {
+                Toast.makeText(context, "Failed to sync sport data", Toast.LENGTH_SHORT).show()
+            }
         }).let { }
     }
 }

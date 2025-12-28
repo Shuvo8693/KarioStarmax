@@ -602,9 +602,6 @@ fun HomePage(navController: NavController) {
                 TopAppBar(
                     navigationIcon = {
                         IconButton(onClick = {
-//                            scope.launch {
-//
-//                            }
                             viewModel.toInstructionList(navController)
                         }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")

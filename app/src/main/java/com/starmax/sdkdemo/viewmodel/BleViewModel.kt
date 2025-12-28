@@ -1552,7 +1552,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.setSportMode(listOf(0x0A, 0x0B, 0x0C, 0x0D)).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = it.toString()
+                bleResponseLabel.value = it.type.toString()
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1631,8 +1631,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                 val jsonValue =
                     SportHistoryFactory(StarmaxBleClient.instance.bleNotify).buildMapFromProtobuf(it)
                         .toJson()
+                blesSportsResponseLabel.value = "Updating soon.."
                 bleResponseLabel.value = jsonValue
-                blesSportsResponseLabel.value = jsonValue
+
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
