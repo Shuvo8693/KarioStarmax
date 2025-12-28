@@ -1086,9 +1086,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
             cityName = "Shenzhen City",  // 深圳市
             arrayListOf(
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1105,9 +1105,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1124,9 +1124,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1143,9 +1143,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1162,9 +1162,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1181,9 +1181,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1200,9 +1200,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,
@@ -1219,9 +1219,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -60,
-                    -60,
-                    -60,
+                    -7,
+                    -15,
+                    -3,
                     0x05,
                     0x25,
                     0x0a,

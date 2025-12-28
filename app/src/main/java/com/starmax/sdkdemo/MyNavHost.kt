@@ -20,6 +20,7 @@ import com.starmax.sdkdemo.pages.HomePage
 import com.starmax.sdkdemo.pages.InstructionListPage
 import com.starmax.sdkdemo.pages.QuickBatteryModePage
 import com.starmax.sdkdemo.pages.ScanPage
+import com.starmax.sdkdemo.pages.WeatherPage
 
 enum class NavPage {
     HomePage,
@@ -34,7 +35,8 @@ enum class NavPage {
     EventReminderPage,
     Gts10PairPage,
     HealthHistoryPage,
-    DevicePage
+    DevicePage,
+    WeatherPage
 }
 
 val LocalNavController = staticCompositionLocalOf<NavHostController> {
@@ -91,6 +93,9 @@ fun MyNavHost(navController: NavHostController) {
         }
         composable(NavPage.DevicePage.name){
             DevicePage(navController)
+        }
+        composable(NavPage.WeatherPage.name){
+            WeatherPage(navController)
         }
     }
 }

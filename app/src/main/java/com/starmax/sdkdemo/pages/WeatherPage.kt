@@ -100,9 +100,7 @@ fun WeatherPageView(navController: NavController, bleViewModel: BleViewModel) {
             } else {
                 // Empty state
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
