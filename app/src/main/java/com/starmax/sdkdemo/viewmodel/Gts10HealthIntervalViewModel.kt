@@ -46,7 +46,7 @@ class Gts10HealthIntervalViewModel(
     fun setData() {
         StarmaxBleClient.instance.setX04HealthIntervals(intervals.map { it.build() }).subscribe({
             viewModelScope.launch {
-                Toast.makeText(context, "设置状态成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Setting status successful", Toast.LENGTH_SHORT).show()
             }
         }, {
 

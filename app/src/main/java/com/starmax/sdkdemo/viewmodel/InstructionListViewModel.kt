@@ -161,11 +161,11 @@ class InstructionListViewModel() : ViewModel() {
 //                "Real-time Data Switch"
             ),
             "Weather" to listOf(
-                "Send Weather (4 Days)",
-                "Read Weather (7 Days)",
+//                "Send Weather (4 Days)",
                 "Send Weather (7 Days)",
-                "Send Ephemeris (Domestic)",
-                "Send Ephemeris (Foreign)"
+                "Read Weather (7 Days)",
+//                "Send Ephemeris (Domestic)",
+//                "Send Ephemeris (Foreign)"
             ),
 //            "Dial" to listOf(
 //                "Send Custom Dial",

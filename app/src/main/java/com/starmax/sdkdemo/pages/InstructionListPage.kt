@@ -1147,6 +1147,9 @@ fun buildInstructionList(
         },
         InstructionItem("Read Weather (7 Days)", "Weather & Time") {
             bleViewModel.getWeatherSeven()
+            scope.launch {
+                navController.navigate(NavPage.DevicePage.name)
+            }
         },
         InstructionItem("Send Ephemeris (Domestic)", "Weather & Time") {
             bleViewModel.bleDevice?.get()?.let { bleViewModel.sendPgl(true) }

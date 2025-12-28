@@ -1,5 +1,6 @@
 package com.starmax.sdkdemo.pages
 
+import androidx.compose.animation.core.StartOffsetType.Companion.Delay
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -20,6 +21,7 @@ import com.starmax.bluetoothsdk.Notify.HealthInterval.HealthIntervalType
 import com.starmax.sdkdemo.PreviewInit
 import com.starmax.sdkdemo.ui.theme.AppTheme
 import com.starmax.sdkdemo.viewmodel.Gts10HealthIntervalViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun Gts10HealthIntervalPage(navController: NavController) {
@@ -65,9 +67,7 @@ fun Gts10HealthIntervalPageView(
                     val task = viewModel.intervals[index]
 
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
+                        modifier = Modifier.fillMaxWidth().padding(15.dp)
                     ) {
                         SelectIntervalType(task = task, viewModel = viewModel)
 
@@ -81,7 +81,7 @@ fun Gts10HealthIntervalPageView(
                             valueRange = 0f..255f,
                             steps = 255,
                             onValueChange = {
-                                viewModel.intervals[index].setMeasureInterval(it.toInt())
+                                viewModel.intervals[index].measureInterval = it.toInt()
                                 viewModel.refresh()
                             }
                         )
@@ -96,7 +96,7 @@ fun Gts10HealthIntervalPageView(
                             valueRange = 0f..255f,
                             steps = 255,
                             onValueChange = {
-                                viewModel.intervals[index].setStoreInterval(it.toInt())
+                                viewModel.intervals[index].storeInterval = it.toInt()
                                 viewModel.refresh()
                             }
                         )
@@ -181,8 +181,7 @@ fun SelectIntervalType(
                 onDismissRequest = { expanded = false }
             ) {
                 HealthIntervalType.values()
-                    .filter {
-                        it != HealthIntervalType.Unknown &&
+                    .filter { it != HealthIntervalType.Unknown &&
                                 it != HealthIntervalType.UNRECOGNIZED
                     }
                     .forEach { option ->

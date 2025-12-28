@@ -503,8 +503,6 @@ fun HomePage(navController: NavController) {
 //            bleViewModel.getSleepHistory(System.currentTimeMillis())
 //            bleViewModel.getStepHistory(System.currentTimeMillis())
 //            bleViewModel.getHeartRateHistory(System.currentTimeMillis())
-            print(bleViewModel.bleHealthResponseLabel)
-            print(bleViewModel.bleBatteryResponseLabel)
         }
     }
     // ═══════════════════════════════════════════════════════
@@ -565,7 +563,7 @@ fun HomePage(navController: NavController) {
 
     AppTheme {
         // All dialogs
-        if (viewModel.openNetDialog) SetNetDialog()
+/*        if (viewModel.openNetDialog) SetNetDialog()
         if (viewModel.openFileSystemDialog) FileSystemDialog()
         if (viewModel.openVolumeDialog) VolumeDialog()
         if (viewModel.openNfcDialog) NfcCardDialog()
@@ -596,7 +594,7 @@ fun HomePage(navController: NavController) {
         if (viewModel.openPasswordDialog) PasswordDialog()
         if (viewModel.openFemaleHealthDialog) FemaleHealthDialog()
         if (viewModel.openBloodSugarCalibrationDialog) BloodSugarCalibrationDialog()
-        if (viewModel.openBloodPressureCalibrationDialog) BloodPressureCalibrationDialog()
+        if (viewModel.openBloodPressureCalibrationDialog) BloodPressureCalibrationDialog()*/
 
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -604,9 +602,10 @@ fun HomePage(navController: NavController) {
                 TopAppBar(
                     navigationIcon = {
                         IconButton(onClick = {
-                            scope.launch {
-                                viewModel.toInstructionList(navController)
-                            }
+//                            scope.launch {
+//
+//                            }
+                            viewModel.toInstructionList(navController)
                         }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }

@@ -1046,7 +1046,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.setWeather(
             arrayListOf(
-                WeatherDay(-9, 40, -20, 0x05, 0x25, 0x0a, 0x07, 0x01, 0x01),
+                WeatherDay(-9, 40, 0x05, -20, 0x25, 0x0a, 0x07, 0x01, 0x01),
                 WeatherDay(-10, 0, -16, 0x05, 0x25, 0x0a, 0x07, 0x01, 0x05),
                 WeatherDay(-11, 0, -10, 0x05, 0x25, 0x0a, 0x07, 0x01, 0x06),
                 WeatherDay(-12, 35, 19, 0x05, 0x25, 0x0a, 0x07, 0x01, 0x12)
@@ -1054,6 +1054,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         ).subscribe({
             if (it.status == 0) {
                 bleResponseLabel.value = "Set weather successfully"
+                Toast.makeText(context, "Set weather successfully", Toast.LENGTH_SHORT).show()
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }
@@ -1072,7 +1073,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
             }
 
             val result = WeatherSevenFactory().buildGetMap(it)
-            bleResponse.value = JSONObject(result.obj!!).toString()
+            bleResponseLabel.value = JSONObject(result.obj!!).toString()
+            print(bleResponseLabel.value)
         }, {}).let {
             sendDisposable.add(it)
         }
@@ -1238,8 +1240,8 @@ class BleViewModel() : ViewModel(), KoinComponent {
             )
         ).subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "\n" +
-                        "Set weather successfully"
+                bleResponseLabel.value = "Set weather successfully"
+                Toast.makeText(context, "Set weather successfully", Toast.LENGTH_SHORT).show()
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }

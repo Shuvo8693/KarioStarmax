@@ -278,6 +278,7 @@ dependencies {
 
     // others
     implementation("com.google.accompanist:accompanist-swiperefresh:0.32.0") // swipe refresh
+    implementation 'com.google.code.gson:gson:2.10.1' // gson for sync data
 }
 protobuf {
     protoc {
