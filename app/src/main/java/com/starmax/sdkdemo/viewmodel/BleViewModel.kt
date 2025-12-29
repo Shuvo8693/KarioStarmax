@@ -25,12 +25,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import androidx.compose.material3.Switch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -49,20 +46,17 @@ import com.sifli.ezip.FileValidator
 import com.sifli.ezip.sifliEzipUtil
 
 import com.starmax.bluetoothsdk.BleFileSender
-import com.starmax.bluetoothsdk.BleFileSender.allFileData
 import com.starmax.bluetoothsdk.BleFileSender.dataSize
 import com.starmax.bluetoothsdk.BleFileSenderListener
 import com.starmax.bluetoothsdk.BmpUtils
 import com.starmax.bluetoothsdk.FileUtils
 import com.starmax.bluetoothsdk.Notify
 import com.starmax.bluetoothsdk.Notify.GetFileV2
-import com.starmax.bluetoothsdk.Notify.Reply
 import com.starmax.bluetoothsdk.StarmaxBleClient
 import com.starmax.bluetoothsdk.StarmaxSend
 import com.starmax.bluetoothsdk.StarmaxSendRequest
 import com.starmax.bluetoothsdk.Utils
 import com.starmax.bluetoothsdk.data.Clock
-import com.starmax.bluetoothsdk.data.EventReminder
 import com.starmax.bluetoothsdk.data.HistoryType
 import com.starmax.bluetoothsdk.data.MessageType
 import com.starmax.bluetoothsdk.data.NotifyType
@@ -75,16 +69,12 @@ import com.starmax.net.repository.CrackRepository
 import com.starmax.net.repository.UiRepository
 import com.starmax.sdkdemo.service.RxBleService
 import com.starmax.sdkdemo.utils.NetFileUtils
-import com.starmax.sdkdemo.utils.SlmM1Crack
 import com.starmax.sdkdemo.utils.TestRepository
-import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.internal.notify
 import org.json.JSONArray
 import org.json.JSONObject
 import org.koin.core.component.KoinComponent
@@ -97,16 +87,12 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Integer.min
 import java.lang.ref.SoftReference
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.HashMap
 import java.util.UUID
 import java.util.regex.Pattern
-import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
-import kotlin.math.roundToInt
 
 
 enum class BleState {
@@ -178,6 +164,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
     var bleBatteryResponseLabel = mutableStateOf("")
     var bleStressResponseLabel = mutableStateOf("")
     var blesSportsResponseLabel = mutableStateOf("")
+    var bleWeatherResponseLabel = mutableStateOf("")
 
     val context: Context by inject()
 
@@ -1067,14 +1054,13 @@ class BleViewModel() : ViewModel(), KoinComponent {
         initData()
         StarmaxBleClient.instance.getWeatherSeven().subscribe({
             if (it.status == 0) {
-                bleResponseLabel.value = "Read weather successfully"
+                bleWeatherResponseLabel.value = "Read weather successfully"
             } else {
-                bleResponseLabel.value = statusLabel(it.status)
+                bleWeatherResponseLabel.value = statusLabel(it.status)
             }
 
             val result = WeatherSevenFactory().buildGetMap(it)
-            bleResponseLabel.value = JSONObject(result.obj!!).toString()
-            print(bleResponseLabel.value)
+            bleWeatherResponseLabel.value = JSONObject(result.obj!!).toString()
         }, {}).let {
             sendDisposable.add(it)
         }
@@ -1083,12 +1069,12 @@ class BleViewModel() : ViewModel(), KoinComponent {
     fun setWeatherSeven() {
         initData()
         StarmaxBleClient.instance.setWeatherSeven(
-            cityName = "Shenzhen City",  // 深圳市
+            cityName = "Dhaka City",  // 深圳市
             arrayListOf(
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1105,9 +1091,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1124,9 +1110,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1143,9 +1129,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1162,9 +1148,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1181,9 +1167,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1200,9 +1186,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1219,9 +1205,9 @@ class BleViewModel() : ViewModel(), KoinComponent {
                     59
                 ),
                 WeatherDay(
-                    -7,
-                    -15,
-                    -3,
+                    15,
+                    40,
+                    10,
                     0x05,
                     0x25,
                     0x0a,
@@ -1553,6 +1539,7 @@ class BleViewModel() : ViewModel(), KoinComponent {
         StarmaxBleClient.instance.setSportMode(listOf(0x0A, 0x0B, 0x0C, 0x0D)).subscribe({
             if (it.status == 0) {
                 bleResponseLabel.value = it.type.toString()
+                bleResponseLabel.value = "Sport mode set successfully"
             } else {
                 bleResponseLabel.value = statusLabel(it.status)
             }

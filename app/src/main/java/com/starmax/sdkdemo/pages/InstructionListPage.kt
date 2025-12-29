@@ -1,8 +1,11 @@
 package com.starmax.sdkdemo.pages
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.animateContentSize
@@ -16,12 +19,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.starmax.sdkdemo.NavPage
 import com.starmax.sdkdemo.ui.theme.AppTheme
@@ -56,18 +61,18 @@ private fun buildActionRegistry(
     otaViewModel: OtaViewModel,
     navController: NavController,
     activity: AppCompatActivity?,
-    selectOtaLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectGts7FirmwareLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectUiLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectGts7CrcLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectImageLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectImageV2Launcher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectDialLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectLogoLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectFileV2Launcher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectDialV2Launcher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
+    selectOtaLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectGts7FirmwareLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectUiLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectGts7CrcLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectImageLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectImageV2Launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectDialLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectLogoLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectFileV2Launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectDialV2Launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     scope: CoroutineScope,
-    context: android.content.Context
+    context: Context
 ): Map<String, () -> Unit> {
     // We reuse buildInstructionList just to extract label -> action
     return buildInstructionList(
@@ -296,22 +301,20 @@ fun InstructionListPage(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = Color.White
                     )
                 )
             }
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
             ) {
                 // Search Bar
-                SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    modifier = Modifier.padding(16.dp)
-                )
+//                SearchBar(
+//                    query = searchQuery,
+//                    onQueryChange = { searchQuery = it },
+//                    modifier = Modifier.padding(16.dp)
+//                )
 
                 // Instruction List
                 LazyColumn(
@@ -385,9 +388,7 @@ fun CategorySection(
     onItemClick: (InstructionItem) -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(),
+        modifier = Modifier.fillMaxWidth().animateContentSize(),
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -397,7 +398,7 @@ fun CategorySection(
             // Category Header
             Surface(
                 onClick = onToggle,
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = Color(0xFF8ad6a6),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -411,7 +412,7 @@ fun CategorySection(
                         Icon(
                             imageVector = getCategoryIcon(category),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -431,6 +432,8 @@ fun CategorySection(
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (isExpanded) "Collapse" else "Expand"
+                        , tint = Color.White
+
                     )
                 }
             }
@@ -465,7 +468,9 @@ fun InstructionButton(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(vertical = 16.dp)
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent),
+        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 8.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -511,18 +516,18 @@ fun buildInstructionList(
     otaViewModel: OtaViewModel,
     navController: NavController,
     activity: AppCompatActivity?,
-    selectOtaLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectGts7FirmwareLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectUiLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectGts7CrcLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectImageLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectImageV2Launcher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectDialLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectLogoLauncher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectFileV2Launcher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
-    selectDialV2Launcher: androidx.activity.compose.ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
+    selectOtaLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectGts7FirmwareLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectUiLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectGts7CrcLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectImageLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectImageV2Launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectDialLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectLogoLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectFileV2Launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    selectDialV2Launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     scope: CoroutineScope,
-    context: android.content.Context
+    context: Context
 ): List<InstructionItem> {
     return listOf(
         // ═══════════════════════════════════════════════════════

@@ -38,7 +38,7 @@ fun WeatherPage(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherPageView(navController: NavController, bleViewModel: BleViewModel) {
-    val bleResponseValue = bleViewModel.bleResponseLabel.value
+    val bleResponseValue = bleViewModel.bleWeatherResponseLabel.value
 
     // Parse JSON weather data
     val weatherData = remember(bleResponseValue) {

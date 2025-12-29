@@ -32,7 +32,7 @@ class CustomDeviceModeViewModel(
             mode,
         ).subscribe({
             viewModelScope.launch {
-                Toast.makeText(context, "设置模式成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Setup mode successful", Toast.LENGTH_SHORT).show()
             }
         }, {
 

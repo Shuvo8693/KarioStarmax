@@ -23,11 +23,11 @@ fun CustomDeviceModeDialog() {
     val viewModel: CustomDeviceModeViewModel = koinViewModel()
     val homeViewModel: HomeViewModel by lazyKoinViewModel()
 
-    CustomDeviceModeDialogView(homeViewModel = homeViewModel,viewModel = viewModel)
+    CustomDeviceModeDialogView(homeViewModel = homeViewModel, viewModel = viewModel)
 }
 
 @Composable
-fun CustomDeviceModeDialogView(homeViewModel: HomeViewModel,viewModel: CustomDeviceModeViewModel) {
+fun CustomDeviceModeDialogView(homeViewModel: HomeViewModel, viewModel: CustomDeviceModeViewModel) {
     Dialog(
         onDismissRequest = { homeViewModel.toggleCustomDeviceModeDialog() }) {
         Card(
@@ -36,7 +36,7 @@ fun CustomDeviceModeDialogView(homeViewModel: HomeViewModel,viewModel: CustomDev
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "手表模式",
+                    text = "Watch Mode",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(15.dp)
                 )
@@ -46,30 +46,30 @@ fun CustomDeviceModeDialogView(homeViewModel: HomeViewModel,viewModel: CustomDev
                 ) {
                     IconToggleButton(
                         checked = viewModel.mode == 0,
-                        onCheckedChange = { it ->
+                        onCheckedChange = { _ ->
                             viewModel.mode = 0
                         }) {
                         Icon(
                             if (viewModel.mode == 0) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "正常模式"
+                            "Normal Mode"
                         )
                     }
-                    Text(text = "正常模式", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "Normal Mode", style = MaterialTheme.typography.labelSmall)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconToggleButton(
                         checked = viewModel.mode == 1,
-                        onCheckedChange = { it ->
+                        onCheckedChange = { _ ->
                             viewModel.mode = 1
                         }) {
                         Icon(
                             if (viewModel.mode == 1) Icons.TwoTone.CheckBox else Icons.TwoTone.CheckBoxOutlineBlank,
-                            "上课模式"
+                            "School Mode"
                         )
                     }
-                    Text(text = "上课模式", style = MaterialTheme.typography.labelSmall)
+                    Text(text = "School Mode", style = MaterialTheme.typography.labelSmall)
                 }
                 Divider()
                 Row(
@@ -81,7 +81,7 @@ fun CustomDeviceModeDialogView(homeViewModel: HomeViewModel,viewModel: CustomDev
                     OutlinedButton(onClick = {
                         homeViewModel.toggleCustomDeviceModeDialog()
                     }) {
-                        Text(text = "取消")
+                        Text(text = "Cancel")
                     }
                     ElevatedButton(
                         onClick = {
@@ -93,7 +93,7 @@ fun CustomDeviceModeDialogView(homeViewModel: HomeViewModel,viewModel: CustomDev
                         ),
                         modifier = Modifier.offset(15.dp)
                     ) {
-                        Text(text = "确定")
+                        Text(text = "Confirm")
                     }
                 }
             }

@@ -68,7 +68,7 @@ class InstructionListViewModel() : ViewModel() {
             "Get Data" to listOf(
                 "Get Drink Water Reminder",
                 "Get Sport Mode",
-                "Get Watch Mode",
+//                "Get Watch Mode",
                 "Get Goals",
                 "Get User Info",
 //                "Get NFC Card Info",
