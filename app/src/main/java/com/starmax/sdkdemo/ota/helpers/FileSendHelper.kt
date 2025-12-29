@@ -17,7 +17,7 @@ class FileSendHelper {
     var failNum = 0
 
     fun getSaveFileName(): String{
-        return Environment.getExternalStorageDirectory().absolutePath + "/StarmaxDemo/images/"
+        return Environment.getExternalStorageDirectory().absolutePath + "/KarioSmartWatch/images/"
     }
 
     fun initFile(inputStream: InputStream?, bleFileSenderListener: BleFileSenderListener) {

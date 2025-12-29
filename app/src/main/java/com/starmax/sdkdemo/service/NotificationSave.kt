@@ -1,5 +1,6 @@
 package com.starmax.sdkdemo.service
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.starmax.sdkdemo.R
@@ -24,6 +26,7 @@ data class NotificationOptions(
         val color: Int? = null,
         val onTapBringToFront: Boolean = false
 )
+
 
 class BackgroundNotification(
         private val context: Context,
@@ -49,7 +52,7 @@ class BackgroundNotification(
                 ?.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
 
         return if (intent != null) {
-            PendingIntent.getActivity(context, 0, intent, 0)
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         } else {
             null
         }
@@ -69,6 +72,7 @@ class BackgroundNotification(
         }
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun updateNotification(
             options: NotificationOptions,
             notify: Boolean
@@ -97,7 +101,7 @@ class BackgroundNotification(
             notificationManager.notify(notificationId, builder.build())
         }
     }
-
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun updateOptions(options: NotificationOptions, isVisible: Boolean) {
         if (options.channelName != this.options.channelName) {
             updateChannel(options.channelName)
