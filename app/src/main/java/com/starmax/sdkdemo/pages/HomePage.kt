@@ -694,7 +694,7 @@ fun WellnessCard(bleViewModel: BleViewModel) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "KARIO WELLNESS WATCH",
+                text = "SHUVO WELLNESS WATCH",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 fontSize = 23.sp,
